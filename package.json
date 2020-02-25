@@ -1,6 +1,6 @@
 {
-  "name": "react-netjoy",
-  "version": "0.1.0",
+  "name": "react-netjoy-base",
+  "version": "0.0.0",
   "description": "Network middleware easy and powerful",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -8,10 +8,7 @@
   "react-native": "src/index.tsx",
   "files": [
     "src",
-    "lib",
-    "android",
-    "ios",
-    "reactnetjoy.podspec"
+    "lib"
   ],
   "scripts": {
     "test": "jest",
@@ -48,12 +45,12 @@
     "jest": "^25.1.0",
     "prettier": "^1.19.1",
     "react": "~16.9.0",
-    "react-native": "~0.61.5",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "axios": "^0.19.2"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "axios": "^0.19.2"
   },
   "jest": {
     "preset": "react-native",
@@ -92,5 +89,8 @@
       "module",
       "typescript"
     ]
+  },
+  "dependencies": {
+    "@types/react-redux": "^7.1.7"
   }
 }
