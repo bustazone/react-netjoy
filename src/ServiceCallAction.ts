@@ -6,18 +6,22 @@ export interface CallInterface {
   startedReqType?: string;
   successReqType?: string;
   failureReqType?: string;
-  setEndpointFromState: (state?: StateType) => string;
+  setEndpointFromState?: (state?: StateType) => string;
   method: string;
   setBodyFromState?: (state?: StateType) => string;
   getHeadersFromState: (state?: StateType) => object;
-  onSuccess?: (response: object) => void;
-  onFailure?: (error: object) => void;
-  onFinish?: () => void;
-  auth: boolean;
-  transformResponseDataWithState?: (response: object, state?: StateType) => object;
+  onSuccess: (response: object) => void;
+  onFailure: (error: object) => void;
+  onFinish: () => void;
+  transformResponseDataWithState?: (response: any, state?: StateType) => any;
+}
+
+export enum CallObjectInterfaceType {
+  ActionType = 'react-netjoy-action',
 }
 
 export interface CallObjectInterface {
+  type: CallObjectInterfaceType.ActionType;
   [API_CALL]: CallInterface;
 }
 
@@ -29,83 +33,66 @@ export class ServiceCall implements ServiceClientInterface {
   startedReqType?: string;
   successReqType?: string;
   failureReqType?: string;
-  setEndpointFromState: (state?: StateType) => string;
+  setEndpointFromState?: (state?: StateType) => string;
   method: string;
   setBodyFromState?: (state?: StateType) => string;
   getHeadersFromState: (state?: StateType) => object;
-  onSuccess?: (response: object) => void;
-  onFailure?: (error: object) => void;
-  onFinish?: () => void;
-  auth: boolean;
-  transformResponseDataWithState?: (response: object, state?: StateType) => object;
+  onSuccess: (response: object) => void;
+  onFailure: (error: object) => void;
+  onFinish: () => void;
+  transformResponseDataWithState?: (response: any, state?: StateType) => any;
 
-  constructor(
-    setEndpointFromState: (state?: StateType) => string,
-    method: string,
-    getHeadersFromState: (state?: StateType) => object = () => ({}),
-    auth: boolean = false
-  ) {
-    this.setEndpointFromState = setEndpointFromState;
-    this.method = method;
-    this.getHeadersFromState = getHeadersFromState;
-    this.auth = auth;
+  constructor() {
+    this.method = 'GET';
+    this.getHeadersFromState = () => ({});
+    this.onSuccess = () => {};
+    this.onFailure = () => {};
+    this.onFinish = () => {};
   }
 
   getAction = () => {
-    return {
-      [API_CALL]: {
-        startedReqType: this.startedReqType,
-        successReqType: this.successReqType,
-        failureReqType: this.failureReqType,
-        setEndpointFromState: this.setEndpointFromState,
-        method: this.method,
-        setBodyFromState: this.setBodyFromState,
-        getHeadersFromState: this.getHeadersFromState,
-        onSuccess: this.onSuccess,
-        onFailure: this.onFailure,
-        onFinish: this.onFinish,
-        auth: this.auth,
-        transformResponseDataWithState: this.transformResponseDataWithState,
-      },
-    };
+    console.log('action');
+    console.log(this);
+    if (this.setEndpointFromState !== undefined) {
+      return {
+        type: CallObjectInterfaceType.ActionType,
+        [API_CALL]: {
+          startedReqType: this.startedReqType,
+          successReqType: this.successReqType,
+          failureReqType: this.failureReqType,
+          setEndpointFromState: this.setEndpointFromState,
+          method: this.method,
+          setBodyFromState: this.setBodyFromState,
+          getHeadersFromState: this.getHeadersFromState,
+          onSuccess: this.onSuccess,
+          onFailure: this.onFailure,
+          onFinish: this.onFinish,
+          transformResponseDataWithState: this.transformResponseDataWithState,
+        },
+      };
+    } else {
+      throw new Error("You've to specify a function endpoint URL.");
+    }
   };
 }
 
 export function ServiceCallFromObject(objectAction: CallObjectInterface): ServiceClientInterface {
   const object = objectAction[API_CALL];
-  let setEndpointFromState, method, getHeadersFromState, auth;
-  if ('setEndpointFromState' in object && object.setEndpointFromState !== undefined) {
-    setEndpointFromState = object.setEndpointFromState;
-  } else {
-    throw new Error('Specify a function endpoint URL.');
+  if (object === undefined) {
+    throw new Error(`The object action in incorrect: ${JSON.stringify(objectAction)}`);
   }
-  if ('method' in object) {
-    method = object.method;
-  } else {
-    throw new Error('');
-  }
-  if ('getHeadersFromState' in object) {
-    getHeadersFromState =
-      object.getHeadersFromState !== undefined ? object.getHeadersFromState : () => ({});
-  } else {
-    throw new Error('');
-  }
-  if ('auth' in object) {
-    auth = object.auth;
-  } else {
-    throw new Error('');
-  }
-  const serviceCall = new ServiceCall(setEndpointFromState, method, getHeadersFromState, auth);
+  const serviceCall = new ServiceCall();
+  if ('setEndpointFromState' in object)
+    serviceCall.setEndpointFromState = object.setEndpointFromState;
+  if ('method' in object) serviceCall.method = object.method;
+  if ('getHeadersFromState' in object) serviceCall.getHeadersFromState = object.getHeadersFromState;
   if ('startedReqType' in object) serviceCall.startedReqType = object.startedReqType;
   if ('successReqType' in object) serviceCall.successReqType = object.successReqType;
   if ('failureReqType' in object) serviceCall.failureReqType = object.failureReqType;
   if ('setBodyFromState' in object) serviceCall.setBodyFromState = object.setBodyFromState;
-  if ('onSuccess' in object)
-    serviceCall.onSuccess = object.onSuccess !== undefined ? object.onSuccess : () => {};
-  if ('onFailure' in object)
-    serviceCall.onFailure = object.onFailure !== undefined ? object.onFailure : () => {};
-  if ('onFinish' in object)
-    serviceCall.onFinish = object.onFinish !== undefined ? object.onFinish : () => {};
+  if ('onSuccess' in object) serviceCall.onSuccess = object.onSuccess;
+  if ('onFailure' in object) serviceCall.onFailure = object.onFailure;
+  if ('onFinish' in object) serviceCall.onFinish = object.onFinish;
   if ('transformResponseDataWithState' in object)
     serviceCall.transformResponseDataWithState = object.transformResponseDataWithState;
   return serviceCall;

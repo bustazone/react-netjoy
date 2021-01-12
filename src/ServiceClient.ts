@@ -1,81 +1,70 @@
 import {
-  API_CALL,
   CallInterface,
   CallObjectInterface,
+  CallObjectInterfaceType,
   ServiceCallFromObject,
 } from './ServiceCallAction';
-import { Store } from 'redux';
-import { ActionNJ, DispatchNJ, NetClientConstructor, NetClientInterface } from './CommonTypes';
+import { MiddlewareAPI } from 'redux';
 import {
+  ActionNJ,
+  DispatchNJ,
+  NetClientConstructor,
+  NetClientInterface,
   InterceptorType,
-  RequestAuthInterceptorType,
-  ResponseAuthInterceptorType,
-} from './Interceptors';
-
-export interface ServiceClientInterface<A extends NetClientInterface> {
-  baseUrl: string;
-  store: Store;
-  next: DispatchNJ;
-  checkConnectionLost?: (dispatch: DispatchNJ) => void;
-  authRequestInterceptor?: (serviceClient: ServiceClientInterface<A>) => RequestAuthInterceptorType;
-  authResponseInterceptor?: (
-    serviceClient: ServiceClientInterface<A>
-  ) => ResponseAuthInterceptorType;
-  requestInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
-  responseInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
-
-  onInnerSuccess: (call: CallInterface) => (response: object) => void;
-  onInnerFailure: (call: CallInterface) => (error: object) => void;
-  onInnerFinish(call: CallInterface): () => void;
-  executeAction(action: ActionNJ, netClientCtor: NetClientConstructor): void;
-}
+  OutActionStarted,
+  OutActionFailure,
+  OutActionSuccess,
+  ServiceClientInterface,
+} from './CommonTypes';
 
 class ServiceClient<A extends NetClientInterface> implements ServiceClientInterface<A> {
   baseUrl: string;
-  store: Store;
+  api: MiddlewareAPI;
   next: DispatchNJ;
-  checkConnectionLost?: (dispatch: DispatchNJ) => void;
-  authRequestInterceptor?: (serviceClient: ServiceClientInterface<A>) => RequestAuthInterceptorType;
-  authResponseInterceptor?: (
-    serviceClient: ServiceClientInterface<A>
-  ) => ResponseAuthInterceptorType;
-  requestInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
-  responseInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
+  checkConnectionLost?: (dispatch: DispatchNJ) => boolean;
+  requestInterceptorList: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
+  responseInterceptorList: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
+  printDebug: boolean;
 
   constructor(
     baseUrl: string,
-    store: Store,
+    api: MiddlewareAPI,
     next: DispatchNJ,
-    checkConnectionLost?: (dispatch: DispatchNJ) => void,
-    authRequestInterceptor?: (
+    checkConnectionLost?: (dispatch: DispatchNJ) => boolean,
+    requestInterceptorList: (
       serviceClient: ServiceClientInterface<A>
-    ) => RequestAuthInterceptorType,
-    authResponseInterceptor?: (
+    ) => InterceptorType[] = () => [],
+    responseInterceptorList: (
       serviceClient: ServiceClientInterface<A>
-    ) => ResponseAuthInterceptorType,
-    requestInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[] = () => [],
-    responseInterceptors: (serviceClient: ServiceClientInterface<A>) => InterceptorType[] = () => []
+    ) => InterceptorType[] = () => [],
+    printDebug: boolean = false
   ) {
     this.baseUrl = baseUrl;
-    this.store = store;
+    this.api = api;
     this.next = next;
     this.checkConnectionLost = checkConnectionLost;
-    this.authRequestInterceptor = authRequestInterceptor;
-    this.authResponseInterceptor = authResponseInterceptor;
-    this.requestInterceptors = requestInterceptors;
-    this.responseInterceptors = responseInterceptors;
+    this.requestInterceptorList = requestInterceptorList;
+    this.responseInterceptorList = responseInterceptorList;
+    this.printDebug = printDebug;
   }
 
   onInnerSuccess = (call: CallInterface) => (response: object) => {
+    if (this.printDebug) {
+      console.log('[NetJoyBase] Final response before transformation: ', response);
+    }
     let transformedResponse = response;
     if (call.transformResponseDataWithState) {
-      transformedResponse = call.transformResponseDataWithState(response, this.store.getState());
+      transformedResponse = call.transformResponseDataWithState(response, this.api.getState());
+    }
+    if (this.printDebug) {
+      console.log('[NetJoyBase] Final response after transformation: ', transformedResponse);
     }
     if (call.successReqType) {
-      this.next({
+      const out: OutActionSuccess = {
         type: call.successReqType,
         response: transformedResponse,
-      });
+      };
+      this.next(out);
     }
     if (call.onSuccess) {
       call.onSuccess(transformedResponse);
@@ -83,11 +72,15 @@ class ServiceClient<A extends NetClientInterface> implements ServiceClientInterf
   };
 
   onInnerFailure = (call: CallInterface) => (error: object) => {
+    if (this.printDebug) {
+      console.log('[NetJoyBase] Final response error: ', error);
+    }
     if (call.failureReqType) {
-      this.next({
+      const out: OutActionFailure = {
         type: call.failureReqType,
         error,
-      });
+      };
+      this.next(out);
     }
     if (call.onFailure) {
       call.onFailure(error);
@@ -103,43 +96,49 @@ class ServiceClient<A extends NetClientInterface> implements ServiceClientInterf
   executeAction(action: ActionNJ, netClientCtor: NetClientConstructor) {
     if (!action) return;
 
-    const apiCallAction = action[API_CALL];
-    if (!apiCallAction) {
+    console.log(action);
+    if (action.type !== CallObjectInterfaceType.ActionType) {
       this.next(action);
       return;
     }
 
-    if (this.checkConnectionLost !== undefined) {
-      this.checkConnectionLost(this.next);
-    }
-
     const call = ServiceCallFromObject(<CallObjectInterface>action);
-
-    let body = '';
-    if (call.setBodyFromState) {
-      body = call.setBodyFromState(this.store.getState());
-    }
 
     const onInnerSuccess = this.onInnerSuccess(call);
     const onInnerFailure = this.onInnerFailure(call);
     const onInnerFinish = this.onInnerFinish(call);
 
+    if (this.checkConnectionLost !== undefined) {
+      if (!this.checkConnectionLost(this.next)) {
+        onInnerFailure({ innerMessage: 'Failure Before started due to lack of connection' });
+        return;
+      }
+    }
+
+    let body = '';
+    if (call.setBodyFromState) {
+      body = call.setBodyFromState(this.api.getState());
+    }
+
     if (call.startedReqType) {
-      this.next({ type: call.startedReqType });
+      const out: OutActionStarted = { type: call.startedReqType };
+      this.next(out);
     }
     const netClient = new netClientCtor(
       this.baseUrl,
-      call.auth,
-      this.requestInterceptors(this),
-      this.responseInterceptors(this),
-      this.authRequestInterceptor!(this),
-      this.authResponseInterceptor!(this)
+      this.requestInterceptorList(this),
+      this.responseInterceptorList(this),
+      this.printDebug
     );
+
+    if (this.printDebug) {
+      console.log('[NetJoyBase] Started call: ', call);
+    }
     netClient.makeCall(
-      call.setEndpointFromState(this.store.getState()),
+      call.setEndpointFromState!(this.api.getState()),
       call.method,
       body,
-      call.getHeadersFromState(this.store.getState()),
+      call.getHeadersFromState(this.api.getState()),
       onInnerSuccess,
       onInnerFailure,
       onInnerFinish

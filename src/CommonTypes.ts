@@ -1,31 +1,40 @@
-import { AnyAction } from 'redux';
-import { CallObjectInterface } from './ServiceCallAction';
-import {
-  InterceptorType,
-  RequestAuthInterceptorType,
-  ResponseAuthInterceptorType,
-} from './Interceptors';
+import { AnyAction, MiddlewareAPI } from 'redux';
+import { CallInterface, CallObjectInterface } from './ServiceCallAction';
 
-export type ActionNJ = AnyAction | CallObjectInterface;
+type ActionNJ = AnyAction | OutAction | CallObjectInterface;
+
+type OutActionStarted = {
+  type: string;
+};
+
+type OutActionSuccess = {
+  type: string;
+  response: any;
+};
+
+type OutActionFailure = {
+  type: string;
+  error: any; // Integrate error system
+};
+
+type OutAction = OutActionStarted | OutActionSuccess | OutActionFailure;
 
 interface Dispatch<A extends ActionNJ = AnyAction> {
   <T extends A>(action: T): T;
 }
 
-export type DispatchNJ = Dispatch<ActionNJ>;
+type DispatchNJ = Dispatch<ActionNJ>;
 
-export interface NetClientConstructor {
+interface NetClientConstructor {
   new (
     baseUrl: string,
-    auth: boolean,
-    requestInterceptor: InterceptorType[],
-    responseInterceptor: InterceptorType[],
-    authRequestInterceptor: RequestAuthInterceptorType,
-    authResponseInterceptor: ResponseAuthInterceptorType
+    requestInterceptorList: InterceptorType[],
+    responseInterceptorList: InterceptorType[],
+    printDebug: boolean
   ): NetClientInterface;
 }
 
-export interface NetClientInterface {
+interface NetClientInterface {
   makeCall(
     url: string,
     method: string,
@@ -36,3 +45,38 @@ export interface NetClientInterface {
     onFinish: () => void
   ): void;
 }
+
+type SuccessMethodType = (config: object) => object;
+type FailureMethodType = (error: object) => object;
+type InterceptorType = {
+  success?: SuccessMethodType;
+  error?: FailureMethodType;
+};
+
+interface ServiceClientInterface<A extends NetClientInterface> {
+  baseUrl: string;
+  api: MiddlewareAPI;
+  next: DispatchNJ;
+  checkConnectionLost?: (dispatch: DispatchNJ) => boolean;
+  requestInterceptorList: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
+  responseInterceptorList: (serviceClient: ServiceClientInterface<A>) => InterceptorType[];
+  onInnerSuccess: (call: CallInterface) => (response: object) => void;
+  onInnerFailure: (call: CallInterface) => (error: object) => void;
+  onInnerFinish(call: CallInterface): () => void;
+  executeAction(action: ActionNJ, netClientCtor: NetClientConstructor): void;
+}
+
+export {
+  ActionNJ,
+  OutActionStarted,
+  OutActionSuccess,
+  OutActionFailure,
+  OutAction,
+  DispatchNJ,
+  InterceptorType,
+  NetClientConstructor,
+  NetClientInterface,
+  FailureMethodType,
+  SuccessMethodType,
+  ServiceClientInterface
+};

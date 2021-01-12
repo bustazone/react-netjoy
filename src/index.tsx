@@ -1,34 +1,6 @@
-import { DispatchNJ } from './CommonTypes';
-import { ServiceClientInterface } from './ServiceClient';
-import {
-  InterceptorType,
-  RequestAuthInterceptorType,
-  ResponseAuthInterceptorType,
-} from './Interceptors';
 import { getServiceClientMiddleware } from './NetworkMiddleware';
-import { NetClientAxios } from './ServiceAxiosNetClient';
+import { ServiceCall } from './ServiceCallAction';
+import { createInterceptor } from './Interceptors';
+import * as NJTypes from './CommonTypes';
 
-function getServiceClientAxiosMiddleware(
-  baseUrl: string,
-  checkConnectionLost?: (dispatch: DispatchNJ) => void,
-  authRequestInterceptor?: (
-    serviceClient: ServiceClientInterface<NetClientAxios>
-  ) => RequestAuthInterceptorType,
-  authResponseInterceptor?: (
-    serviceClient: ServiceClientInterface<NetClientAxios>
-  ) => ResponseAuthInterceptorType,
-  requestInterceptor?: (serviceClient: ServiceClientInterface<NetClientAxios>) => InterceptorType[],
-  responseInterceptor?: (serviceClient: ServiceClientInterface<NetClientAxios>) => InterceptorType[]
-) {
-  return getServiceClientMiddleware(
-    NetClientAxios,
-    baseUrl,
-    checkConnectionLost,
-    authRequestInterceptor,
-    authResponseInterceptor,
-    requestInterceptor,
-    responseInterceptor
-  );
-}
-
-export default getServiceClientAxiosMiddleware;
+export { ServiceCall, getServiceClientMiddleware, createInterceptor, NJTypes };
