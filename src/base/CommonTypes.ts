@@ -55,5 +55,5 @@ export interface ServiceClientInterface<
   printDebug: boolean
   netClient: NetClientInterface<ResponseType>
   executeDirectCallWithConfig<T extends NetClientConfigWithID>(config: T): Promise<ResponseType>
-  executeAction(call: CallInterface<StateType, ResponseType, ErrorType>): () => void | undefined
+  executeRequest(call: CallInterface<StateType, ResponseType, ErrorType>): () => void | undefined
 }

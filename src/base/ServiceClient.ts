@@ -93,7 +93,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
     return this.netClient.executeDirectCallWithConfig<T>(config)
   }
 
-  executeAction(call: CallInterface<StateType, ResponseType, ErrorType>) {
+  executeRequest(call: CallInterface<StateType, ResponseType, ErrorType>) {
     // const call = CallInterface<S>(action)
 
     let body = ''

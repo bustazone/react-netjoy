@@ -49,7 +49,7 @@ export function getServiceClientMiddleware<StateType, ConfigType extends NetClie
       responseInterceptorList ? responseInterceptorList(api.getState, next) : undefined,
       printDebug,
     )
-    middleware.executeAction(
+    middleware.executeRequest(
       ServiceCallFromObject<StateType, ResponseType, ErrorType>(
         adaptCallToRedux<StateType, ResponseType, ErrorType>(
           api.getState,

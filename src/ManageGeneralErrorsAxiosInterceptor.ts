@@ -30,7 +30,7 @@ export const manageError = (_getState: () => RootState, next: DispatchNJ) => (
         error.response.status === 403 ||
         error.response.status === 404
       ) {
-        // serviceClient.executeAction(logoutService(onLogout))
+        // serviceClient.executeRequest(logoutService(onLogout))
         // console.log(serviceClient.call.reqId)
         console.log(error.response)
         // serviceClient.next(showErrorView(true))

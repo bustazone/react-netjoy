@@ -73,7 +73,7 @@ export const retryWithRefreshToken = (getState: () => RootState, next: DispatchN
           reject(error)
         }
         console.log('---> getRefreshedUserCredentialsAction for ' + config.reqId)
-        serviceClient.executeAction(
+        serviceClient.executeRequest(
           ServiceCallFromObject<RootState, AxiosResponse, AxiosError>(
             adaptCallToRedux(
               getState,
@@ -99,7 +99,7 @@ export const retryWithRefreshToken = (getState: () => RootState, next: DispatchN
           reject(error)
         }
         console.log('---> getRefreshedUserCredentialsAction for ' + config.reqId)
-        serviceClient.executeAction(
+        serviceClient.executeRequest(
           ServiceCallFromObject<RootState, AxiosResponse, AxiosError>(
             getClientCredentialsAction(onRequestSuccess, onRequestError),
           ),

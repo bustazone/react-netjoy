@@ -5,7 +5,7 @@ import { NetClientConfigWithID, ServiceClientInterface } from 'support/network/b
 import { RequestBudgetComponentProps, RequestType } from 'support/network/request_budget_component/View.Types'
 import { randomID } from 'support/network/request_budget_component/View.Utils'
 
-class View<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
+class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
   RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>
 > {
   netClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>
@@ -27,7 +27,7 @@ class View<StateType, ConfigType extends NetClientConfigWithID, ResponseType, Er
         // Borrar request
       },
     }
-    const cancel = this.netClient.executeAction(newRequest)
+    const cancel = this.netClient.executeRequest(newRequest)
     // y almacenamos
     this.requestList.push({
       call: request,
@@ -46,6 +46,7 @@ class View<StateType, ConfigType extends NetClientConfigWithID, ResponseType, Er
 
   cancelRequestsByReqId(reqId: string) {
     // cancel all request in the array
+    // TODO excep
     const requestData = this.requestList.find(item => {
       return item.call.reqId === reqId
     })
@@ -60,10 +61,10 @@ class View<StateType, ConfigType extends NetClientConfigWithID, ResponseType, Er
   }
 
   componentWillUnmount() {
-    if (super.componentWillUnmount) super.componentWillUnmount()
     // Cancel all associated requests
     this.cancelAllRequests()
+    if (super.componentWillUnmount) super.componentWillUnmount()
   }
 }
 
-export default View
+export default RequestBudgetComponent
