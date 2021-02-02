@@ -5,7 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start"
+    "start": "react-native start",
+    "build": "npm i && cd ios && pod install"
   },
   "dependencies": {
     "react": "16.9.0",
@@ -14,6 +15,8 @@
   "devDependencies": {
     "@babel/core": "^7.8.4",
     "@babel/runtime": "^7.8.4",
+    "@types/react": "^17.0.0",
+    "@types/react-native": "^0.63.46",
     "metro-react-native-babel-preset": "^0.58.0"
   }
 }
