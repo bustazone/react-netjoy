@@ -1,4 +1,4 @@
-import { CallInterface } from './ServiceCallAction'
+import { RequestInterface } from './Request.Types'
 import {
   NetClientConstructor,
   NetClientInterface,
@@ -42,41 +42,41 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
     )
   }
 
-  onInnerSuccess = (call: CallInterface<StateType, ResponseType, ErrorType>) => (response: ResponseType) => {
+  onInnerSuccess = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (response: ResponseType) => {
     if (this.printDebug) {
       console.log('[NetJoyBase] Final response before transformation: ', response)
     }
     let transformedResponse = response
-    if (call.transformResponseDataWithState) {
-      transformedResponse = call.transformResponseDataWithState(response, this.getState())
+    if (req.transformResponseDataWithState) {
+      transformedResponse = req.transformResponseDataWithState(response, this.getState())
     }
     if (this.printDebug) {
       console.log('[NetJoyBase] Final response after transformation: ', transformedResponse)
     }
-    if (call.onSuccess) {
-      call.onSuccess(transformedResponse)
+    if (req.onSuccess) {
+      req.onSuccess(transformedResponse)
     }
   }
 
-  onInnerFailure = (call: CallInterface<StateType, ResponseType, ErrorType>) => (error: ErrorType) => {
+  onInnerFailure = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (error: ErrorType) => {
     if (this.printDebug) {
       console.log('[NetJoyBase] Final error before transformation: ', error)
     }
     let transformedError = error
-    if (call.transformErrorDataWithState) {
-      transformedError = call.transformErrorDataWithState(error, this.getState())
+    if (req.transformErrorDataWithState) {
+      transformedError = req.transformErrorDataWithState(error, this.getState())
     }
     if (this.printDebug) {
       console.log('[NetJoyBase] Final error after transformation: ', transformedError)
     }
-    if (call.onFailure) {
-      call.onFailure(transformedError)
+    if (req.onFailure) {
+      req.onFailure(transformedError)
     }
   }
 
-  onInnerFinish = (call: CallInterface<StateType, ResponseType, ErrorType>) => () => {
-    if (call.onFinish) {
-      call.onFinish()
+  onInnerFinish = (req: RequestInterface<StateType, ResponseType, ErrorType>) => () => {
+    if (req.onFinish) {
+      req.onFinish()
     }
   }
 
@@ -93,35 +93,33 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
     return this.netClient.executeDirectCallWithConfig<T>(config)
   }
 
-  executeRequest(call: CallInterface<StateType, ResponseType, ErrorType>) {
-    // const call = CallInterface<S>(action)
-
+  executeRequest(req: RequestInterface<StateType, ResponseType, ErrorType>) {
     let body = ''
-    if (call.setBodyFromState) {
-      body = call.setBodyFromState(this.getState())
+    if (req.setBodyFromState) {
+      body = req.setBodyFromState(this.getState())
     }
 
     if (this.printDebug) {
-      console.log(`[NetJoyBase] Started call ${call.reqId} : ${call}`)
+      console.log(`[NetJoyBase] Started req ${req.reqId} : ${req}`)
     }
 
-    // if (this.checkConnectionLost && !this.checkConnectionLost()) {
-    //   call.onFailure({
-    //     innerMessage: `Failure Before started ${call.reqId} due to lack of connection`,
-    //   })
-    //   return
-    // }
+    if (this.checkConnectionLost && !this.checkConnectionLost()) {
+      req.onFailure({
+        innerMessage: `Failure Before started ${req.reqId} due to lack of connection`,
+      })
+      return () => {}
+    }
 
     return this.netClient.makeCallFromParams(
-      call.reqId,
-      call.setEndpointFromState!(this.getState()),
-      call.method,
+      req.reqId,
+      req.setEndpointFromState!(this.getState()),
+      req.method,
       body,
-      call.getHeadersFromState(this.getState()),
-      call.onStart,
-      this.onInnerSuccess(call),
-      this.onInnerFailure(call),
-      this.onInnerFinish(call),
+      req.getHeadersFromState(this.getState()),
+      req.onStart,
+      this.onInnerSuccess(req),
+      this.onInnerFailure(req),
+      this.onInnerFinish(req),
     )
   }
 
@@ -135,7 +133,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
   // cancelRequestsByReqId(reqId: string) {
   //   // cancel all request in the array
   //   const requestData = this.requestList.find(item => {
-  //     return item.call.reqId === reqId
+  //     return item.req.reqId === reqId
   //   })
   //   if (requestData) {
   //     if (requestData.cancel) requestData.cancel()

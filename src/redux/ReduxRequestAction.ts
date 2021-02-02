@@ -1,6 +1,6 @@
-import { API_CALL, ReduxActionInterface, ReduxCallInterface, ReduxCallObjectInterfaceType } from './ReduxServiceCallAction.Types'
+import { API_CALL, ReduxActionInterface, ReduxRequestActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
 
-export class ReduxServiceCall<StateType, ResponseType, ErrorType> implements ReduxCallInterface<StateType, ResponseType, ErrorType> {
+export class ReduxRequest<StateType, ResponseType, ErrorType> implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType> {
   reqId: string
   startedReqType?: string
   successReqType?: string
@@ -55,12 +55,12 @@ export class ReduxServiceCall<StateType, ResponseType, ErrorType> implements Red
 
 export function ServiceCallFromObject<StateType, ResponseType, ErrorType>(
   objectAction: ReduxActionInterface<StateType, ResponseType, ErrorType>,
-): ReduxServiceCall<StateType, ResponseType, ErrorType> {
+): ReduxRequest<StateType, ResponseType, ErrorType> {
   const object = objectAction[API_CALL]
   if (object === undefined) {
     throw new Error(`The object action in incorrect: ${JSON.stringify(objectAction)}`)
   }
-  const serviceCall = new ReduxServiceCall<StateType, ResponseType, ErrorType>()
+  const serviceCall = new ReduxRequest<StateType, ResponseType, ErrorType>()
   if ('reqId' in object) serviceCall.reqId = object.reqId
   if ('setEndpointFromState' in object) serviceCall.setEndpointFromState = object.setEndpointFromState
   if ('method' in object) serviceCall.method = object.method

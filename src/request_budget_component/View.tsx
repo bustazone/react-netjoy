@@ -1,9 +1,8 @@
 import { Component } from 'react'
-import { getNewClient } from 'support/network'
-import { CallInterface } from 'support/network/base/ServiceCallAction'
-import { NetClientConfigWithID, ServiceClientInterface } from 'support/network/base/CommonTypes'
-import { RequestBudgetComponentProps, RequestType } from 'support/network/request_budget_component/View.Types'
-import { randomID } from 'support/network/request_budget_component/View.Utils'
+import { NetClientConfigWithID, ServiceClientInterface } from '../base/CommonTypes'
+import { RequestBudgetComponentProps, RequestType } from './View.Types'
+import { randomID } from './View.Utils'
+import { RequestInterface } from '../base/Request.Types'
 
 class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
   RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>
@@ -14,10 +13,10 @@ class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID
   constructor(props: RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>) {
     super(props)
     // Creamos el netclient si no existe
-    this.netClient = props.netClient || getNewClient()
+    this.netClient = props.netClient
   }
 
-  executeRequest(request: CallInterface<StateType, ResponseType, ErrorType>): string {
+  executeRequest(request: RequestInterface<StateType, ResponseType, ErrorType>): string {
     // Usamos el netclient para hacer la llamada
     const newRequest = {
       ...request,

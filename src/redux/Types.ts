@@ -1,5 +1,5 @@
 import { AnyAction } from 'redux'
-import { ReduxActionInterface } from './ReduxServiceCallAction.Types'
+import { ReduxActionInterface } from './ReduxRequestAction.Types'
 
 export type ActionNJ<StateType> = AnyAction | OutAction | ReduxActionInterface<StateType, any, any>
 

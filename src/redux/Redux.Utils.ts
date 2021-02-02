@@ -1,6 +1,6 @@
-import { DispatchNJ, OutActionFailure, OutActionStarted, OutActionSuccess } from './redux/Types'
-import { ServiceCallFromObject } from './redux/ReduxServiceCallAction'
-import { ReduxActionInterface } from './redux/ReduxServiceCallAction.Types'
+import { DispatchNJ, OutActionFailure, OutActionStarted, OutActionSuccess } from './Types'
+import { ServiceCallFromObject } from './ReduxRequestAction'
+import { ReduxActionInterface } from './ReduxRequestAction.Types'
 
 export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
   _getState: () => StateType,
@@ -14,9 +14,7 @@ export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
       next(actionStart)
     }
   }
-  const newOnSuccess = (type: string | undefined, method: (response: object) => void) => (
-    response: object,
-  ) => {
+  const newOnSuccess = (type: string | undefined, method: (response: object) => void) => (response: object) => {
     if (type) {
       const out: OutActionSuccess<any> = {
         type: type,
@@ -27,9 +25,7 @@ export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
     method(response)
   }
   call.onSuccess = newOnSuccess(call.successReqType, call.onSuccess)
-  const newOnFailure = (type: string | undefined, method: (error: object) => void) => (
-    error: object,
-  ) => {
+  const newOnFailure = (type: string | undefined, method: (error: object) => void) => (error: object) => {
     if (type) {
       const out: OutActionFailure<any> = {
         type: type,

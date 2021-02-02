@@ -1,27 +1,31 @@
 {
-  "name": "react-netjoy-base",
-  "version": "0.0.24",
-  "description": "Network middleware easy and powerful",
+  "name": "react-netjoy",
+  "version": "0.1.7",
+  "description": "Network client easy and powerful",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
-  "types": "lib/typescript/src/index.d.ts",
-  "react": "src/index.tsx",
+  "react-native": "src/index.ts",
+  "types": "lib/typescript/index.d.ts",
   "files": [
-    "src",
-    "lib"
+    "lib/",
+    "src/"
   ],
   "scripts": {
-    "test": "jest",
-    "typescript": "tsc --noEmit",
-    "lint": "eslint --ext .js,.ts,.tsx .",
     "prepare": "bob build",
     "example": "yarn --cwd example",
-    "bootstrap": "yarn example && yarn && cd example/ios && pod install"
+    "bootstrap": "yarn example && yarn && cd example/ios && pod install",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx --quiet",
+    "lint-fix": "npx eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "prettier": "npx prettier --check \"{src,__tests__}/**/*.{js,jsx,ts,tsx}\"",
+    "prettier-fix": "npx prettier --write \"{src,__tests__}/**/*.{js,jsx,ts,tsx}\"",
+    "tsc": "npx tsc -p . --noEmit"
   },
   "keywords": [
-    "react-native",
-    "ios",
-    "android"
+    "react",
+    "network"
   ],
   "repository": "https://github.com/bustazone/react-netjoy",
   "author": "javier bustamante <bustazone@gmail.com> (https://github.com/bustazone)",
@@ -31,57 +35,46 @@
   },
   "homepage": "https://github.com/bustazone/react-netjoy#readme",
   "devDependencies": {
-    "@commitlint/config-conventional": "^8.3.4",
-    "@react-native-community/bob": "^0.9.7",
-    "@react-native-community/eslint-config": "^0.0.7",
-    "@types/jest": "^25.1.2",
+    "@babel/core": "7.12.10",
+    "@babel/runtime": "7.12.5",
+    "react-native-builder-bob": "^0.17.1",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "@types/jest": "^26.0.19",
     "@types/react": "^16.9.19",
-    "@types/react-native": "0.61.10",
-    "commitlint": "^8.3.4",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-prettier": "^3.1.2",
-    "husky": "^4.0.1",
-    "jest": "^25.1.0",
-    "prettier": "^1.19.1",
-    "react": "~16.9.0",
-    "typescript": "^3.7.5",
-    "axios": "^0.19.2"
+    "@types/react-redux": "^7.1.7",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "babel-jest": "25.5.1",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-json": "^2.1.2",
+    "eslint-plugin-react": "^7.22.0",
+    "husky": "^4.3.6",
+    "jest": "25.5.4",
+    "metro-react-native-babel-preset": "0.59.0",
+    "prettier": "^2.2.1",
+    "prettier-eslint": "^12.0.0",
+    "react-test-renderer": "16.13.1",
+    "typescript": "^4.1.3",
+    "axios": "^0.21.1",
+    "redux": "^4.0.5"
   },
   "peerDependencies": {
     "react": "*",
-    "axios": "^0.19.2"
+    "axios": ">= 0.21.x",
+    "redux": ">= 4.x.x"
   },
-  "jest": {
-    "preset": "react-native",
-    "modulePathIgnorePatterns": [
-      "<rootDir>/lib/"
-    ]
-  },
+  "dependencies": {},
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
+      "pre-commit": "npm run lint && npm run tsc"
     }
   },
-  "eslintConfig": {
-    "extends": [
-      "@react-native-community",
-      "prettier"
-    ],
-    "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "es5",
-          "useTabs": false
-        }
-      ]
-    }
-  },
-  "@react-native-community/bob": {
+  "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
     "targets": [
@@ -89,8 +82,5 @@
       "module",
       "typescript"
     ]
-  },
-  "dependencies": {
-    "@types/react-redux": "^7.1.7"
   }
 }

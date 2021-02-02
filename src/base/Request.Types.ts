@@ -1,6 +1,6 @@
 export const API_CALL = 'API_CALL'
 
-export interface CallInterface<StateType, ResponseType, ErrorType> {
+export interface RequestInterface<StateType, ResponseType, ErrorType> {
   reqId: string
   setEndpointFromState?: (state: StateType) => string
   method: string

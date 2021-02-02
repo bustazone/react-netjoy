@@ -1,9 +1,9 @@
-import { CallInterface } from '../base/ServiceCallAction'
+import { RequestInterface } from '../base/Request.Types'
 
 export const API_CALL = 'API_CALL'
 
-export interface ReduxCallInterface<StateType, ResponseType, ErrorType>
-  extends CallInterface<StateType, ResponseType, ErrorType> {
+export interface ReduxRequestActionInterface<StateType, ResponseType, ErrorType>
+  extends RequestInterface<StateType, ResponseType, ErrorType> {
   startedReqType?: string
   successReqType?: string
   failureReqType?: string
@@ -16,5 +16,5 @@ export enum ReduxCallObjectInterfaceType {
 
 export interface ReduxActionInterface<StateType, ResponseType, ErrorType> {
   type: ReduxCallObjectInterfaceType.ActionType
-  [API_CALL]: Omit<ReduxCallInterface<StateType, ResponseType, ErrorType>, 'getAction'>
+  [API_CALL]: Omit<ReduxRequestActionInterface<StateType, ResponseType, ErrorType>, 'getAction'>
 }

@@ -7,17 +7,17 @@ import {
   RequestInterceptorType,
   ResponseInterceptorType,
 } from '../base/CommonTypes'
-import { adaptCallToRedux } from '../Redux.Utils'
+import { adaptCallToRedux } from './Redux.Utils'
 import { ActionNJ, DispatchNJ } from './Types'
-import { ReduxActionInterface, ReduxCallObjectInterfaceType } from './ReduxServiceCallAction.Types'
-import { ServiceCallFromObject } from './ReduxServiceCallAction'
+import { ReduxActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
+import { ServiceCallFromObject } from './ReduxRequestAction'
 
 export function getServiceClientMiddleware<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
   baseUrl: string,
   baseHeaders: { [key: string]: string },
   printDebug: boolean,
-  checkConnectionLost?: (dispatch: DispatchNJ) => boolean,
+  checkConnectionLost?: () => boolean,
   requestInterceptorList?: (
     getState: () => StateType,
     next: DispatchNJ,
@@ -44,7 +44,7 @@ export function getServiceClientMiddleware<StateType, ConfigType extends NetClie
       baseUrl,
       api.getState,
       baseHeaders,
-      undefined, //checkConnectionLost,
+      checkConnectionLost,
       requestInterceptorList ? requestInterceptorList(api.getState, next) : undefined,
       responseInterceptorList ? responseInterceptorList(api.getState, next) : undefined,
       printDebug,

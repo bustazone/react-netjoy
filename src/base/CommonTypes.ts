@@ -1,4 +1,4 @@
-import { CallInterface } from './ServiceCallAction'
+import { RequestInterface } from './Request.Types'
 
 export interface NetClientConfigWithID {
   reqId: string
@@ -43,17 +43,12 @@ export type ResponseInterceptorType<R, E> = {
   error?: FailureResponseMethodType<E, R>
 }
 
-export interface ServiceClientInterface<
-  StateType,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ConfigType extends NetClientConfigWithID,
-  ResponseType,
-  ErrorType
-> {
+// @ts-ignore
+export interface ServiceClientInterface<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
   getState: () => StateType
   checkConnectionLost?: () => boolean
   printDebug: boolean
   netClient: NetClientInterface<ResponseType>
   executeDirectCallWithConfig<T extends NetClientConfigWithID>(config: T): Promise<ResponseType>
-  executeRequest(call: CallInterface<StateType, ResponseType, ErrorType>): () => void | undefined
+  executeRequest(req: RequestInterface<StateType, ResponseType, ErrorType>): () => void | undefined
 }

@@ -1,8 +1,8 @@
-import { NetClientConfigWithID, ServiceClientInterface } from 'support/network/base/CommonTypes'
-import { CallInterface } from 'support/network/base/ServiceCallAction'
+import { NetClientConfigWithID, ServiceClientInterface } from '../base/CommonTypes'
+import { RequestInterface } from '../base/Request.Types'
 
 export type RequestType<StateType, ResponseType, ErrorType> = {
-  call: CallInterface<StateType, ResponseType, ErrorType>
+  call: RequestInterface<StateType, ResponseType, ErrorType>
   cancel?: () => void
 }
 
