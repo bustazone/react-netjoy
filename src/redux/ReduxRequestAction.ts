@@ -1,4 +1,5 @@
 import { API_CALL, ReduxActionInterface, ReduxRequestActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
+import { Request } from '../base/Request'
 
 export class ReduxRequest<StateType, ResponseType, ErrorType> implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType> {
   reqId: string
@@ -16,14 +17,18 @@ export class ReduxRequest<StateType, ResponseType, ErrorType> implements ReduxRe
   transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
   transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
 
-  constructor() {
-    this.reqId = ''
-    this.method = 'GET'
-    this.getHeadersFromState = () => ({})
-    this.onStart = () => {}
-    this.onSuccess = () => {}
-    this.onFailure = () => {}
-    this.onFinish = () => {}
+  constructor(req?: Request<StateType, ResponseType, ErrorType>) {
+    this.reqId = req ? req.reqId : ''
+    this.setEndpointFromState = req ? req.setEndpointFromState : undefined
+    this.method = req ? req.reqId : 'GET'
+    this.setBodyFromState = req ? req.setBodyFromState : undefined
+    this.getHeadersFromState = req ? req.getHeadersFromState : () => ({})
+    this.onStart = req ? req.onStart : () => {}
+    this.onSuccess = req ? req.onSuccess : () => {}
+    this.onFailure = req ? req.onFailure : () => {}
+    this.onFinish = req ? req.onFinish : () => {}
+    this.transformResponseDataWithState = req ? req.transformResponseDataWithState : undefined
+    this.transformErrorDataWithState = req ? req.transformErrorDataWithState : undefined
   }
 
   getAction = (): ReduxActionInterface<StateType, ResponseType, ErrorType> => {

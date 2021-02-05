@@ -8,17 +8,18 @@ import { DispatchNJ } from '../redux/Types'
 import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
 
-export function getEmptyRequest<State>() {
+export function getAxiosEmptyRequest<State>() {
   return new Request<State, AxiosResponse, AxiosError>()
 }
 
-export function getEmptyAxiosRequestAction<State>() {
-  return new ReduxRequest<State, AxiosResponse, AxiosError>()
+export function getAxiosEmptyRequestAction<State>(req?: Request<State, AxiosResponse, AxiosError>) {
+  return new ReduxRequest<State, AxiosResponse, AxiosError>(req)
 }
 
 export function getAxiosNewClient<State>(
   baseUrl: string,
   state: () => State,
+  baseHeaders: { [key: string]: string },
   checkConnectionLost?: () => boolean,
   requestInterceptorList: (
     serviceClient: ServiceClientInterface<State, AxiosNetClientConfig, AxiosResponse, AxiosError>,
@@ -32,9 +33,7 @@ export function getAxiosNewClient<State>(
     NetClientAxios,
     baseUrl,
     state,
-    {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    baseHeaders,
     checkConnectionLost,
     requestInterceptorList,
     responseInterceptorList,
