@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react'
-import { Text, View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Text, View, TouchableOpacity } from 'react-native'
+import {singleton} from "./jjj";
 
 const ExampComp: FunctionComponent<{
   data: string
@@ -18,7 +18,7 @@ const ExampComp: FunctionComponent<{
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          value.setInfop(value.info + 'x')
+          value.setInfop(singleton.get() + 'x')
         }}>
         <Text>{value.info}</Text>
       </TouchableOpacity>
