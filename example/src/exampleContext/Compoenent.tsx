@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react'
 import { Text, View, TouchableOpacity } from 'react-native'
-import {singleton} from "./jjj";
 
 const ExampComp: FunctionComponent<{
   data: string
@@ -12,14 +11,18 @@ const ExampComp: FunctionComponent<{
     <View>
       <TouchableOpacity
         onPress={() => {
+          console.log('dddd0')
           value.func()
-        }}>
+        }}
+      >
         <Text>{value.data}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          value.setInfop(singleton.get() + 'x')
-        }}>
+          console.log('dddd1')
+          value.setInfop('x')
+        }}
+      >
         <Text>{value.info}</Text>
       </TouchableOpacity>
     </View>
