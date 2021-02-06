@@ -1,34 +1,28 @@
 import { API_CALL, ReduxActionInterface, ReduxRequestActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
 import { Request } from '../base/Request'
 
-export class ReduxRequest<StateType, ResponseType, ErrorType> implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType> {
-  reqId: string
+export class ReduxRequest<StateType, ResponseType, ErrorType>
+  extends Request<StateType, ResponseType, ErrorType>
+  implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType> {
   startedReqType?: string
   successReqType?: string
   failureReqType?: string
-  setEndpointFromState?: (state: StateType) => string
-  method: string
-  setBodyFromState?: (state: StateType) => any
-  getHeadersFromState: (state: StateType) => object
-  onStart: () => void
-  onSuccess: (response: object) => void
-  onFailure: (error: object) => void
-  onFinish: () => void
-  transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
-  transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
 
   constructor(req?: Request<StateType, ResponseType, ErrorType>) {
-    this.reqId = req ? req.reqId : ''
-    this.setEndpointFromState = req ? req.setEndpointFromState : undefined
-    this.method = req ? req.reqId : 'GET'
-    this.setBodyFromState = req ? req.setBodyFromState : undefined
-    this.getHeadersFromState = req ? req.getHeadersFromState : () => ({})
-    this.onStart = req ? req.onStart : () => {}
-    this.onSuccess = req ? req.onSuccess : () => {}
-    this.onFailure = req ? req.onFailure : () => {}
-    this.onFinish = req ? req.onFinish : () => {}
-    this.transformResponseDataWithState = req ? req.transformResponseDataWithState : undefined
-    this.transformErrorDataWithState = req ? req.transformErrorDataWithState : undefined
+    super()
+    super.reqId = req ? req.reqId : ''
+    super.setEndpointFromState = req ? req.setEndpointFromState : undefined
+    super.method = req ? req.reqId : 'GET'
+    super.setBodyFromState = req ? req.setBodyFromState : undefined
+    super.getHeadersFromState = req ? req.getHeadersFromState : () => ({})
+    super.onStart = req ? req.onStart : () => {}
+    super.onSuccess = req ? req.onSuccess : () => {}
+    super.onFailure = req ? req.onFailure : () => {}
+    super.onFinish = req ? req.onFinish : () => {}
+    super.transformResponseDataWithState = req ? req.transformResponseDataWithState : undefined
+    super.transformErrorDataWithState = req ? req.transformErrorDataWithState : undefined
+    super.debugForcedResponse = req ? req.debugForcedResponse : undefined
+    super.debugForcedError = req ? req.debugForcedError : undefined
   }
 
   getAction = (): ReduxActionInterface<StateType, ResponseType, ErrorType> => {
@@ -50,6 +44,8 @@ export class ReduxRequest<StateType, ResponseType, ErrorType> implements ReduxRe
           onFinish: this.onFinish,
           transformResponseDataWithState: this.transformResponseDataWithState,
           transformErrorDataWithState: this.transformErrorDataWithState,
+          debugForcedResponse: this.debugForcedResponse,
+          debugForcedError: this.debugForcedError,
         },
       }
     } else {
@@ -80,5 +76,7 @@ export function ServiceCallFromObject<StateType, ResponseType, ErrorType>(
   if ('onFinish' in object) serviceCall.onFinish = object.onFinish
   if ('transformResponseDataWithState' in object) serviceCall.transformResponseDataWithState = object.transformResponseDataWithState
   if ('transformErrorDataWithState' in object) serviceCall.transformErrorDataWithState = object.transformErrorDataWithState
+  if ('debugForcedResponse' in object) serviceCall.debugForcedResponse = object.debugForcedResponse
+  if ('debugForcedError' in object) serviceCall.debugForcedError = object.debugForcedError
   return serviceCall
 }

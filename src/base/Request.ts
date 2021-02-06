@@ -12,6 +12,8 @@ export class Request<StateType, ResponseType, ErrorType> implements RequestInter
   onFinish: () => void
   transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
   transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
+  debugForcedResponse?: any
+  debugForcedError?: any
 
   constructor() {
     this.reqId = ''

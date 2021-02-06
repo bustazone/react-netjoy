@@ -6,6 +6,12 @@ export interface DebugRequestConfig {
 
 export type DebugNetClientConfig = DebugRequestConfig & NetClientConfigWithID
 
-export type DebugResponse = {}
+export type DebugResponse = {
+  config: DebugNetClientConfig
+  data: any
+}
 
-export type DebugError = {}
+export type DebugError = {
+  config: DebugNetClientConfig
+  error: any
+}

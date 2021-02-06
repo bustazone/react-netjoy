@@ -1,18 +1,22 @@
 import { RequestInterface } from './Request.Types'
+import { ResponseInterceptorType } from './ResponseInterceptorUtils.Types'
+import { RequestInterceptorType } from './RequestInterceptorUtils.Types'
 
 export interface NetClientConfigWithID {
   reqId: string
+  debugForcedResponse?: any
+  debugForcedError?: any
 }
 
-export interface NetClientConstructor<C extends NetClientConfigWithID, R, E> {
+export interface NetClientConstructor<ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
   new (
     baseUrl: string,
-    requestInterceptorList: RequestInterceptorType<C, E>[],
-    responseInterceptorList: ResponseInterceptorType<R, E>[],
+    requestInterceptorList: RequestInterceptorType<ConfigType, ErrorType>[],
+    responseInterceptorList: ResponseInterceptorType<ResponseType, ErrorType>[],
     baseHeaders: { [key: string]: string },
     timeout?: number,
-    printDebug?: boolean,
-  ): NetClientInterface<R>
+    debugPrint?: boolean,
+  ): NetClientInterface<ResponseType>
 }
 
 export interface NetClientInterface<R> {
@@ -27,27 +31,16 @@ export interface NetClientInterface<R> {
     onSuccess: (response: any) => void,
     onFailure: (error: any) => void,
     onFinish: () => void,
+    debugForcedResponse?: any,
+    debugForcedError?: any,
   ): () => void | undefined
-}
-
-export type SuccessRequestMethodType<C extends NetClientConfigWithID> = (config: C) => Promise<C> | C | never
-export type SuccessResponseMethodType<R> = (response: R) => Promise<R> | R | never
-export type FailureRequestMethodType<E, C> = (error: E) => Promise<C> | C | never
-export type FailureResponseMethodType<E, R> = (error: E) => Promise<R> | R | never
-export type RequestInterceptorType<C extends NetClientConfigWithID, E> = {
-  success?: SuccessRequestMethodType<C>
-  error?: FailureRequestMethodType<E, C>
-}
-export type ResponseInterceptorType<R, E> = {
-  success?: SuccessResponseMethodType<R>
-  error?: FailureResponseMethodType<E, R>
 }
 
 // @ts-ignore
 export interface ServiceClientInterface<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
   getState: () => StateType
   checkConnectionLost?: () => boolean
-  printDebug: boolean
+  debugPrint: boolean
   netClient: NetClientInterface<ResponseType>
   executeDirectCallWithConfig<T extends NetClientConfigWithID>(config: T): Promise<ResponseType>
   executeRequest(req: RequestInterface<StateType, ResponseType, ErrorType>): () => void | undefined

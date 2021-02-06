@@ -1,35 +1,27 @@
 import ServiceClient from '../base/ServiceClient'
 import { Action, Middleware, MiddlewareAPI } from 'redux'
-import {
-  NetClientConstructor,
-  ServiceClientInterface,
-  NetClientConfigWithID,
-  RequestInterceptorType,
-  ResponseInterceptorType,
-} from '../base/CommonTypes'
+import { NetClientConstructor, NetClientConfigWithID } from '../base/CommonTypes'
 import { adaptCallToRedux } from './Redux.Utils'
 import { ActionNJ, DispatchNJ } from './Types'
 import { ReduxActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
 import { ServiceCallFromObject } from './ReduxRequestAction'
+import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
+import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
 
 export function getServiceClientMiddleware<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
   baseUrl: string,
   baseHeaders: { [key: string]: string },
-  printDebug: boolean,
+  debugPrint: boolean,
   checkConnectionLost?: () => boolean,
   requestInterceptorList?: (
     getState: () => StateType,
     next: DispatchNJ,
-  ) => (
-    serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
-  ) => RequestInterceptorType<ConfigType, ErrorType>[],
+  ) => RequestInterceptorListType<StateType, ConfigType, ResponseType, ErrorType>,
   responseInterceptorList?: (
     getState: () => StateType,
     next: DispatchNJ,
-  ) => (
-    serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
-  ) => ResponseInterceptorType<ResponseType, ErrorType>[],
+  ) => ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType>,
 ): Middleware<any, any, DispatchNJ> {
   return (api: MiddlewareAPI<DispatchNJ, StateType>) => (next: DispatchNJ) => (action: ActionNJ<StateType>) => {
     if (!action) return
@@ -47,7 +39,7 @@ export function getServiceClientMiddleware<StateType, ConfigType extends NetClie
       checkConnectionLost,
       requestInterceptorList ? requestInterceptorList(api.getState, next) : undefined,
       responseInterceptorList ? responseInterceptorList(api.getState, next) : undefined,
-      printDebug,
+      debugPrint,
     )
     middleware.executeRequest(
       ServiceCallFromObject<StateType, ResponseType, ErrorType>(

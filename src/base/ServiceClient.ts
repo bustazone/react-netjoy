@@ -1,18 +1,13 @@
 import { RequestInterface } from './Request.Types'
-import {
-  NetClientConstructor,
-  NetClientInterface,
-  ServiceClientInterface,
-  NetClientConfigWithID,
-  RequestInterceptorType,
-  ResponseInterceptorType,
-} from './CommonTypes'
+import { NetClientConstructor, NetClientInterface, ServiceClientInterface, NetClientConfigWithID } from './CommonTypes'
+import { RequestInterceptorListType } from './RequestInterceptorUtils.Types'
+import { ResponseInterceptorListType } from './ResponseInterceptorUtils.Types'
 
 class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>
   implements ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType> {
   getState: () => StateType
   checkConnectionLost?: () => boolean
-  printDebug: boolean
+  debugPrint: boolean
   netClient: NetClientInterface<ResponseType>
 
   constructor(
@@ -21,16 +16,12 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
     getState: () => StateType,
     baseHeaders: { [key: string]: string },
     checkConnectionLost?: () => boolean,
-    requestInterceptorList: (
-      serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
-    ) => RequestInterceptorType<ConfigType, ErrorType>[] = () => [],
-    responseInterceptorList: (
-      serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
-    ) => ResponseInterceptorType<ResponseType, ErrorType>[] = () => [],
-    printDebug: boolean = false,
+    requestInterceptorList: RequestInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
+    responseInterceptorList: ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
+    debugPrint: boolean = false,
   ) {
     this.getState = getState
-    this.printDebug = printDebug
+    this.debugPrint = debugPrint
     this.checkConnectionLost = checkConnectionLost
     this.netClient = new netClientCtor(
       baseUrl,
@@ -38,19 +29,19 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       responseInterceptorList(this),
       baseHeaders,
       undefined,
-      printDebug,
+      debugPrint,
     )
   }
 
   onInnerSuccess = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (response: ResponseType) => {
-    if (this.printDebug) {
+    if (this.debugPrint) {
       console.log('[NetJoyBase] Final response before transformation: ', response)
     }
     let transformedResponse = response
     if (req.transformResponseDataWithState) {
       transformedResponse = req.transformResponseDataWithState(response, this.getState())
     }
-    if (this.printDebug) {
+    if (this.debugPrint) {
       console.log('[NetJoyBase] Final response after transformation: ', transformedResponse)
     }
     if (req.onSuccess) {
@@ -59,14 +50,14 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
   }
 
   onInnerFailure = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (error: ErrorType) => {
-    if (this.printDebug) {
+    if (this.debugPrint) {
       console.log('[NetJoyBase] Final error before transformation: ', error)
     }
     let transformedError = error
     if (req.transformErrorDataWithState) {
       transformedError = req.transformErrorDataWithState(error, this.getState())
     }
-    if (this.printDebug) {
+    if (this.debugPrint) {
       console.log('[NetJoyBase] Final error after transformation: ', transformedError)
     }
     if (req.onFailure) {
@@ -99,8 +90,8 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       body = req.setBodyFromState(this.getState())
     }
 
-    if (this.printDebug) {
-      console.log(`[NetJoyBase] Started req ${req.reqId} : ${req}`)
+    if (this.debugPrint) {
+      console.log(`[NetJoyBase] Started req ${req.reqId} : ${JSON.stringify(req)}`)
     }
 
     if (this.checkConnectionLost && !this.checkConnectionLost()) {
@@ -120,6 +111,8 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       this.onInnerSuccess(req),
       this.onInnerFailure(req),
       this.onInnerFinish(req),
+      req.debugForcedResponse,
+      req.debugForcedError,
     )
   }
 

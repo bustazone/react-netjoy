@@ -12,4 +12,6 @@ export interface RequestInterface<StateType, ResponseType, ErrorType> {
   onFinish: () => void
   transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
   transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
+  debugForcedError?: any
+  debugForcedResponse?: any
 }
