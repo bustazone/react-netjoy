@@ -1,17 +1,6 @@
-import {ServiceClientInterface} from "../../src/base/CommonTypes";
+import { axios } from 'react-netjoy'
 
-export const manageError = (
-  _getState: () => {},
-  _next: () => {},
-) => (
-  _serviceClient: ServiceClientInterface<
-    RootState,
-    NetClientAxios,
-    AxiosNetClientConfig,
-    AxiosResponse,
-    AxiosError
-  >,
-) => (error: AxiosError) => {
+export const manageError: axios.AxiosInterceptorResponseErrorInputFunctionType<{}> = (error, _serviceClient) => {
   console.log('error')
   console.log(error)
   throw error

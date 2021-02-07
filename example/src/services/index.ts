@@ -29,7 +29,7 @@ export function getAxiosRequest(onSuccess: (response: object) => void = () => {}
   serviceCall.method = 'GET'
   serviceCall.onSuccess = onSuccess
   serviceCall.onFailure = onFailure
-  serviceCall.debugForcedResponse = { dfff: 'forced response' }
+  serviceCall.debugForcedResponse = { debugForced: 'response', debugForcedResponse: { data: { sdfsdf: 'hudhudud' } } }
   return serviceCall
 }
 
