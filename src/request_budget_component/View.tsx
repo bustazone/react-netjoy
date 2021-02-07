@@ -4,9 +4,12 @@ import { RequestBudgetComponentProps, RequestType } from './View.Types'
 import { randomID } from './View.Utils'
 import { RequestInterface } from '../base/Request.Types'
 
-class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
-  RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>
-> {
+class RequestBudgetComponent<
+  StateType,
+  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
+  ResponseType,
+  ErrorType
+> extends Component<RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>> {
   netClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>
   requestList: RequestType<StateType, ResponseType, ErrorType>[] = []
 

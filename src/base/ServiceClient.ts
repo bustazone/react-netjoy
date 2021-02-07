@@ -3,12 +3,12 @@ import { NetClientConstructor, NetClientInterface, ServiceClientInterface, NetCl
 import { RequestInterceptorListType } from './RequestInterceptorUtils.Types'
 import { ResponseInterceptorListType } from './ResponseInterceptorUtils.Types'
 
-class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>
+class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>, ResponseType, ErrorType>
   implements ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType> {
   getState: () => StateType
   checkConnectionLost?: () => boolean
   debugPrint: boolean
-  netClient: NetClientInterface<ResponseType>
+  netClient: NetClientInterface<ResponseType, ErrorType>
 
   constructor(
     netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
@@ -71,7 +71,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
     }
   }
 
-  executeDirectCallWithConfig<T extends NetClientConfigWithID>(config: T): Promise<ResponseType> {
+  executeDirectCallWithConfig<T extends NetClientConfigWithID<ResponseType, ErrorType>>(config: T): Promise<ResponseType> {
     // if (this.checkConnectionLost !== undefined) {
     //   if (!this.checkConnectionLost(this.next)) {
     //     this.onFailure({
@@ -94,6 +94,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       console.log(`[NetJoyBase] Started req ${req.reqId} : ${JSON.stringify(req)}`)
     }
 
+    // Chick if the connection is ready
     if (this.checkConnectionLost && !this.checkConnectionLost()) {
       req.onFailure({
         innerMessage: `Failure Before started ${req.reqId} due to lack of connection`,
@@ -101,6 +102,18 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       return () => {}
     }
 
+    // Select debug mode response
+    let debugForcedResponse: ResponseType | undefined
+    let debugForcedError: ErrorType | undefined
+    if (req.debugForcedResponse?.debugForced) {
+      if (req.debugForcedResponse?.debugForced === 'error') {
+        debugForcedError = req.debugForcedResponse?.debugForcedError
+      } else if (req.debugForcedResponse?.debugForced === 'response') {
+        debugForcedResponse = req.debugForcedResponse?.debugForcedResponse
+      }
+    }
+
+    // Execute the call
     return this.netClient.makeCallFromParams(
       req.reqId,
       req.setEndpointFromState!(this.getState()),
@@ -111,28 +124,10 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, Respons
       this.onInnerSuccess(req),
       this.onInnerFailure(req),
       this.onInnerFinish(req),
-      req.debugForcedResponse,
-      req.debugForcedError,
+      debugForcedResponse,
+      debugForcedError,
     )
   }
-
-  // cancelAllRequests() {
-  //   // cancel all request in the array
-  //   this.requestList.forEach(requestData => {
-  //     if (requestData.cancel) requestData.cancel()
-  //   })
-  // }
-  //
-  // cancelRequestsByReqId(reqId: string) {
-  //   // cancel all request in the array
-  //   const requestData = this.requestList.find(item => {
-  //     return item.req.reqId === reqId
-  //   })
-  //   if (requestData) {
-  //     if (requestData.cancel) requestData.cancel()
-  //     return
-  //   }
-  // }
 }
 
 export default ServiceClient

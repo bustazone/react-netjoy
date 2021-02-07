@@ -3,12 +3,17 @@ import { Action, Middleware, MiddlewareAPI } from 'redux'
 import { NetClientConstructor, NetClientConfigWithID } from '../base/CommonTypes'
 import { adaptCallToRedux } from './Redux.Utils'
 import { ActionNJ, DispatchNJ } from './Types'
-import { ReduxActionInterface, ReduxCallObjectInterfaceType } from './ReduxRequestAction.Types'
-import { ServiceCallFromObject } from './ReduxRequestAction'
+import { ReduxActionInterface, ReduxCallObjectInterfaceLiteral } from './ReduxRequestAction.Types'
+import { RequestActionFromObject } from './ReduxRequestAction'
 import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
 
-export function getServiceClientMiddleware<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
+export function getServiceClientMiddleware<
+  StateType,
+  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
+  ResponseType,
+  ErrorType
+>(
   netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
   baseUrl: string,
   baseHeaders: { [key: string]: string },
@@ -26,7 +31,7 @@ export function getServiceClientMiddleware<StateType, ConfigType extends NetClie
   return (api: MiddlewareAPI<DispatchNJ, StateType>) => (next: DispatchNJ) => (action: ActionNJ<StateType>) => {
     if (!action) return
 
-    if (action.type !== ReduxCallObjectInterfaceType.ActionType) {
+    if (action.type !== ReduxCallObjectInterfaceLiteral) {
       next(action)
       return
     }
@@ -42,7 +47,7 @@ export function getServiceClientMiddleware<StateType, ConfigType extends NetClie
       debugPrint,
     )
     middleware.executeRequest(
-      ServiceCallFromObject<StateType, ResponseType, ErrorType>(
+      RequestActionFromObject<StateType, ResponseType, ErrorType>(
         adaptCallToRedux<StateType, ResponseType, ErrorType>(
           api.getState,
           next,

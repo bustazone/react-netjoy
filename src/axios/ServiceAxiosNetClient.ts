@@ -4,15 +4,15 @@ import { AxiosNetClientConfig } from './ServiceAxiosNetClient.Types'
 import { RequestInterceptorType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorType } from '../base/ResponseInterceptorUtils.Types'
 
-export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse> {
+export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse, AxiosError> {
   debugPrint: boolean
   instance: AxiosInstance
-  requestInterceptorList: RequestInterceptorType<AxiosNetClientConfig, AxiosError>[]
+  requestInterceptorList: RequestInterceptorType<AxiosNetClientConfig, AxiosResponse, AxiosError>[]
   responseInterceptorList: ResponseInterceptorType<AxiosResponse, AxiosError>[]
 
   constructor(
     baseUrl: string,
-    requestInterceptorList: RequestInterceptorType<AxiosNetClientConfig, AxiosError>[],
+    requestInterceptorList: RequestInterceptorType<AxiosNetClientConfig, AxiosResponse, AxiosError>[],
     responseInterceptorList: ResponseInterceptorType<AxiosResponse, AxiosError>[],
     baseHeaders: { [key: string]: string },
     timeout: number = 10000,
@@ -28,79 +28,81 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse>
     this.requestInterceptorList = requestInterceptorList
     this.responseInterceptorList = responseInterceptorList
 
-    requestInterceptorList.reverse().forEach((chain: RequestInterceptorType<AxiosNetClientConfig, AxiosError>, index: number) => {
-      this.instance.interceptors.request.use(
-        async config => {
-          const customConfig = config as AxiosNetClientConfig
-          if (this.debugPrint) {
-            console.log(`[NetJoyBaseAxios] Started ${customConfig.reqId} request success interceptor #${index}`)
-          }
-          let newConfig = config
-          if (chain.success) {
-            try {
-              newConfig = await chain.success(customConfig)
-            } catch (error) {
-              if (this.debugPrint) {
-                console.log(`[NetJoyBaseAxios] Rejected ${customConfig.reqId} request success interceptor #${index}`)
+    requestInterceptorList
+      .reverse()
+      .forEach((chain: RequestInterceptorType<AxiosNetClientConfig, AxiosResponse, AxiosError>, index: number) => {
+        this.instance.interceptors.request.use(
+          async config => {
+            const customConfig = config as AxiosNetClientConfig
+            if (this.debugPrint) {
+              console.log(`[NetJoyBaseAxios] Started ${customConfig.reqId} request success interceptor #${index}`)
+            }
+            let newConfig = config
+            if (chain.success) {
+              try {
+                newConfig = await chain.success(customConfig)
+              } catch (error) {
+                if (this.debugPrint) {
+                  console.log(`[NetJoyBaseAxios] Rejected ${customConfig.reqId} request success interceptor #${index}`)
+                }
+                throw { ...error, config: newConfig }
               }
-              throw { ...error, config: newConfig }
+              if (this.debugPrint) {
+                console.log(`[NetJoyBaseAxios] Resolved ${customConfig.reqId} request success interceptor #${index}`)
+              }
+              return newConfig
             }
             if (this.debugPrint) {
-              console.log(`[NetJoyBaseAxios] Resolved ${customConfig.reqId} request success interceptor #${index}`)
+              console.log(`[NetJoyBaseAxios] No ${customConfig.reqId} request success on interceptor #${index}`)
             }
             return newConfig
-          }
-          if (this.debugPrint) {
-            console.log(`[NetJoyBaseAxios] No ${customConfig.reqId} request success on interceptor #${index}`)
-          }
-          return newConfig
-        },
-        async error => {
-          const ff = error.config as AxiosNetClientConfig
-          let newConfig = ff
-          if (chain.error) {
-            if (this.debugPrint) {
-              console.log(`[NetJoyBaseAxios] Started ${ff.reqId} request failure interceptor #${index}`)
-            }
-            try {
-              newConfig = await chain.error(error)
-            } catch (newCatchError) {
+          },
+          async error => {
+            const ff = error.config as AxiosNetClientConfig
+            let newConfig = ff
+            if (chain.error) {
               if (this.debugPrint) {
-                console.log(`[NetJoyBaseAxios] Rejected ${ff.reqId} request failure interceptor #${index}`)
+                console.log(`[NetJoyBaseAxios] Started ${ff.reqId} request failure interceptor #${index}`)
               }
-              throw { ...error, ...newCatchError }
+              try {
+                newConfig = await chain.error(error)
+              } catch (newCatchError) {
+                if (this.debugPrint) {
+                  console.log(`[NetJoyBaseAxios] Rejected ${ff.reqId} request failure interceptor #${index}`)
+                }
+                throw { ...error, ...newCatchError }
+              }
+              if (this.debugPrint) {
+                console.log(`[NetJoyBaseAxios] Resolved ${ff.reqId} request failure interceptor #${index}`)
+              }
+              return newConfig
             }
             if (this.debugPrint) {
-              console.log(`[NetJoyBaseAxios] Resolved ${ff.reqId} request failure interceptor #${index}`)
+              console.log(`[NetJoyBaseAxios] No ${ff.reqId} request failure on interceptor #${index}`)
             }
-            return newConfig
-          }
-          if (this.debugPrint) {
-            console.log(`[NetJoyBaseAxios] No ${ff.reqId} request failure on interceptor #${index}`)
-          }
-          throw error
-        },
-      )
-    })
+            throw error
+          },
+        )
+      })
 
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
         const ff = response.config as AxiosNetClientConfig
         if (ff.debugForcedError) {
-          throw { config: response.config, response: { ...response, data: ff.debugForcedError } }
+          throw { ...ff.debugForcedError, config: response.config, response: response }
         }
         if (ff.debugForcedResponse) {
-          return { ...response, data: ff.debugForcedResponse }
+          return { ...response, ...ff.debugForcedResponse }
         }
         return response
       },
-      async error => {
+      async (error: AxiosError) => {
         const ff = error.config as AxiosNetClientConfig
         if (ff.debugForcedError) {
-          throw { ...error, response: { ...error.response, data: ff.debugForcedError } }
+          throw { ...error, ...ff.debugForcedError }
         }
         if (ff.debugForcedResponse) {
-          return { ...error.response, data: ff.debugForcedResponse }
+          return { ...error.response, ...ff.debugForcedResponse }
         }
         throw error
       },
@@ -177,8 +179,8 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse>
     onSuccess: (response: AxiosResponse) => void,
     onFailure: (error: AxiosError) => void,
     onFinish: () => void,
-    debugForcedResponse?: any,
-    debugForcedError?: any,
+    debugForcedResponse?: AxiosResponse,
+    debugForcedError?: AxiosError,
   ): () => void {
     const CancelToken = axios.CancelToken
     const source = CancelToken.source()

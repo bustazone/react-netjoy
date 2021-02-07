@@ -1,4 +1,4 @@
-import { RequestInterface } from './Request.Types'
+import { DebugForcedResponseType, RequestInterface } from './Request.Types'
 
 export class Request<StateType, ResponseType, ErrorType> implements RequestInterface<StateType, ResponseType, ErrorType> {
   reqId: string
@@ -12,8 +12,7 @@ export class Request<StateType, ResponseType, ErrorType> implements RequestInter
   onFinish: () => void
   transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
   transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
-  debugForcedResponse?: any
-  debugForcedError?: any
+  debugForcedResponse: DebugForcedResponseType<Partial<ResponseType>, Partial<ErrorType>>
 
   constructor() {
     this.reqId = ''
@@ -23,5 +22,6 @@ export class Request<StateType, ResponseType, ErrorType> implements RequestInter
     this.onSuccess = () => {}
     this.onFailure = () => {}
     this.onFinish = () => {}
+    this.debugForcedResponse = { debugForced: 'disabled' }
   }
 }

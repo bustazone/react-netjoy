@@ -1,5 +1,11 @@
 export const API_CALL = 'API_CALL'
 
+export type DebugForcedResponseType<ResponseType, ErrorType> = {
+  debugForced?: 'error' | 'response' | 'disabled'
+  debugForcedResponse?: ResponseType | undefined
+  debugForcedError?: ErrorType | undefined
+}
+
 export interface RequestInterface<StateType, ResponseType, ErrorType> {
   reqId: string
   setEndpointFromState?: (state: StateType) => string
@@ -12,6 +18,5 @@ export interface RequestInterface<StateType, ResponseType, ErrorType> {
   onFinish: () => void
   transformResponseDataWithState?: (response: ResponseType, state: StateType) => any
   transformErrorDataWithState?: (error: ErrorType, state: StateType) => any
-  debugForcedError?: any
-  debugForcedResponse?: any
+  debugForcedResponse: DebugForcedResponseType<Partial<ResponseType>, Partial<ErrorType>>
 }

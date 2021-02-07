@@ -1,5 +1,5 @@
 import { DispatchNJ, OutActionFailure, OutActionStarted, OutActionSuccess } from './Types'
-import { ServiceCallFromObject } from './ReduxRequestAction'
+import { RequestActionFromObject } from './ReduxRequestAction'
 import { ReduxActionInterface } from './ReduxRequestAction.Types'
 
 export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
@@ -7,7 +7,7 @@ export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
   next: DispatchNJ,
   action: ReduxActionInterface<StateType, ResponseType, ErrorType>,
 ): ReduxActionInterface<StateType, ResponseType, ErrorType> {
-  const call = ServiceCallFromObject(action)
+  const call = RequestActionFromObject(action)
   call.onStart = () => {
     if (call.startedReqType) {
       const actionStart: OutActionStarted = { type: call.startedReqType }

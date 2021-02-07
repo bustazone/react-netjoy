@@ -2,6 +2,8 @@ import { RequestInterface } from '../base/Request.Types'
 
 export const API_CALL = 'API_CALL'
 
+export const ReduxCallObjectInterfaceLiteral = 'react-netjoy-action'
+
 export interface ReduxRequestActionInterface<StateType, ResponseType, ErrorType>
   extends RequestInterface<StateType, ResponseType, ErrorType> {
   startedReqType?: string
@@ -10,11 +12,7 @@ export interface ReduxRequestActionInterface<StateType, ResponseType, ErrorType>
   getAction: () => ReduxActionInterface<StateType, ResponseType, ErrorType>
 }
 
-export enum ReduxCallObjectInterfaceType {
-  ActionType = 'react-netjoy-action',
-}
-
 export interface ReduxActionInterface<StateType, ResponseType, ErrorType> {
-  type: ReduxCallObjectInterfaceType.ActionType
+  type: typeof ReduxCallObjectInterfaceLiteral
   [API_CALL]: Omit<ReduxRequestActionInterface<StateType, ResponseType, ErrorType>, 'getAction'>
 }

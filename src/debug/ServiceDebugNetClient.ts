@@ -3,14 +3,14 @@ import { DebugError, DebugNetClientConfig, DebugResponse } from './ServiceDebugN
 import { RequestInterceptorType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorType } from '../base/ResponseInterceptorUtils.Types'
 
-export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse> {
+export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse, DebugError> {
   debugPrint: boolean
-  requestInterceptorList: RequestInterceptorType<DebugNetClientConfig, DebugError>[]
+  requestInterceptorList: RequestInterceptorType<DebugNetClientConfig, DebugResponse, DebugError>[]
   responseInterceptorList: ResponseInterceptorType<DebugResponse, DebugError>[]
 
   constructor(
     _baseUrl: string,
-    requestInterceptorList: RequestInterceptorType<DebugNetClientConfig, DebugError>[],
+    requestInterceptorList: RequestInterceptorType<DebugNetClientConfig, DebugResponse, DebugError>[],
     responseInterceptorList: ResponseInterceptorType<DebugResponse, DebugError>[],
     _baseHeaders: { [key: string]: string },
     _timeout: number = 10000,
@@ -99,8 +99,8 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse>
     onSuccess: (response: DebugResponse) => void,
     onFailure: (error: DebugError) => void,
     onFinish: () => void,
-    debugForcedResponse?: any,
-    debugForcedError?: any,
+    debugForcedResponse?: DebugResponse,
+    debugForcedError?: DebugError,
   ): () => void {
     const config: DebugNetClientConfig = {
       reqId,
@@ -111,8 +111,11 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse>
     onStart()
     // eslint-disable-next-line no-undef
     let timeout: NodeJS.Timer
+
+    // Execute request interceptors
     this.executeRequestInterceptorList(config)
       .then(configx => {
+        // Execute request
         new Promise<DebugResponse>((resolve, reject) => {
           timeout = setTimeout(() => {
             if (configx.debugForcedResponse) {
@@ -124,8 +127,9 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse>
             resolve({ config: configx, data: { value: 'fake data' } })
           }, configx.timeoutMilliseconds || 3000)
         })
-          .then(response2 => {
-            this.executeResponseInterceptorList(response2, undefined, true)
+          .then(response => {
+            // Execute response interceptors on success
+            this.executeResponseInterceptorList(response, undefined, true)
               .then(responsex => {
                 onSuccess(responsex)
               })
@@ -137,9 +141,10 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse>
               })
           })
           .catch(error => {
+            // Execute response interceptors on error
             this.executeResponseInterceptorList(undefined, error, true)
-              .then(responsex => {
-                onSuccess(responsex)
+              .then(response => {
+                onSuccess(response)
               })
               .catch(errorx => {
                 onFailure(errorx)
@@ -149,13 +154,13 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse>
               })
           })
       })
-      .catch(e => {
-        this.executeResponseInterceptorList(undefined, e, true)
+      .catch(error => {
+        this.executeResponseInterceptorList(undefined, error, true)
           .then(response => {
             onSuccess(response)
           })
-          .catch(error => {
-            onFailure(error)
+          .catch(errorx => {
+            onFailure(errorx)
           })
           .then(() => {
             onFinish()

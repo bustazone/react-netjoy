@@ -5,10 +5,46 @@ import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
 import { DebugResponse, DebugError, DebugNetClientConfig } from './ServiceDebugNetClient.Types'
 import { NetClientDebug } from './ServiceDebugNetClient'
-import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
-import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
+import {
+  InterceptorRequestErrorInputFunction,
+  InterceptorRequestSuccessInputFunction,
+  RequestInterceptorListType,
+} from '../base/RequestInterceptorUtils.Types'
+import {
+  InterceptorResponseErrorInputFunction,
+  InterceptorResponseSuccessInputFunction,
+  ResponseInterceptorListType,
+} from '../base/ResponseInterceptorUtils.Types'
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
+
+export type DebugInterceptorRequestSuccessInputFunctionType<StateType> = InterceptorRequestSuccessInputFunction<
+  StateType,
+  DebugNetClientConfig,
+  DebugResponse,
+  DebugError
+>
+
+export type DebugInterceptorRequestErrorInputFunctionType<StateType> = InterceptorRequestErrorInputFunction<
+  StateType,
+  DebugNetClientConfig,
+  DebugResponse,
+  DebugError
+>
+
+export type DebugInterceptorResponseSuccessInputFunctionType<StateType> = InterceptorResponseSuccessInputFunction<
+  StateType,
+  DebugNetClientConfig,
+  DebugResponse,
+  DebugError
+>
+
+export type DebugInterceptorResponseErrorInputFunctionType<StateType> = InterceptorResponseErrorInputFunction<
+  StateType,
+  DebugNetClientConfig,
+  DebugResponse,
+  DebugError
+>
 
 export class DebugRequestInterceptorList<State> extends RequestInterceptorList<State, DebugNetClientConfig, DebugResponse, DebugError> {}
 

@@ -4,7 +4,7 @@ export interface DebugRequestConfig {
   timeoutMilliseconds?: number
 }
 
-export type DebugNetClientConfig = DebugRequestConfig & NetClientConfigWithID
+export type DebugNetClientConfig = DebugRequestConfig & NetClientConfigWithID<DebugResponse, DebugError>
 
 export type DebugResponse = {
   config: DebugNetClientConfig

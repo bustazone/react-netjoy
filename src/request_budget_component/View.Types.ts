@@ -6,6 +6,11 @@ export type RequestType<StateType, ResponseType, ErrorType> = {
   cancel?: () => void
 }
 
-export type RequestBudgetComponentProps<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> = {
+export type RequestBudgetComponentProps<
+  StateType,
+  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
+  ResponseType,
+  ErrorType
+> = {
   netClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>
 }

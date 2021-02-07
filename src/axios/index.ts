@@ -6,10 +6,46 @@ import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
 import { DispatchNJ } from '../redux/Types'
 import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
-import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
-import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
+import {
+  InterceptorRequestErrorInputFunction,
+  InterceptorRequestSuccessInputFunction,
+  RequestInterceptorListType,
+} from '../base/RequestInterceptorUtils.Types'
+import {
+  InterceptorResponseErrorInputFunction,
+  InterceptorResponseSuccessInputFunction,
+  ResponseInterceptorListType,
+} from '../base/ResponseInterceptorUtils.Types'
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
+
+export type AxiosInterceptorRequestSuccessInputFunctionType<StateType> = InterceptorRequestSuccessInputFunction<
+  StateType,
+  AxiosNetClientConfig,
+  AxiosResponse,
+  AxiosError
+>
+
+export type AxiosInterceptorRequestErrorInputFunctionType<StateType> = InterceptorRequestErrorInputFunction<
+  StateType,
+  AxiosNetClientConfig,
+  AxiosResponse,
+  AxiosError
+>
+
+export type AxiosInterceptorResponseSuccessInputFunctionType<StateType> = InterceptorResponseSuccessInputFunction<
+  StateType,
+  AxiosNetClientConfig,
+  AxiosResponse,
+  AxiosError
+>
+
+export type AxiosInterceptorResponseErrorInputFunctionType<StateType> = InterceptorResponseErrorInputFunction<
+  StateType,
+  AxiosNetClientConfig,
+  AxiosResponse,
+  AxiosError
+>
 
 export class AxiosRequestInterceptorList<State> extends RequestInterceptorList<State, AxiosNetClientConfig, AxiosResponse, AxiosError> {}
 
