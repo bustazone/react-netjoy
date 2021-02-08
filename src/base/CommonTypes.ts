@@ -31,8 +31,8 @@ export interface NetClientInterface<ResponseType, ErrorType> {
     onSuccess: (response: any) => void,
     onFailure: (error: any) => void,
     onFinish: () => void,
-    debugForcedResponse?: ResponseType,
-    debugForcedError?: ErrorType,
+    debugForcedResponse?: Partial<ResponseType>,
+    debugForcedError?: Partial<ErrorType>,
   ): () => void | undefined
 }
 

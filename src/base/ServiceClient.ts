@@ -103,8 +103,8 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     }
 
     // Select debug mode response
-    let debugForcedResponse: ResponseType | undefined
-    let debugForcedError: ErrorType | undefined
+    let debugForcedResponse: Partial<ResponseType> | undefined
+    let debugForcedError: Partial<ErrorType> | undefined
     if (req.debugForcedResponse?.debugForced) {
       if (req.debugForcedResponse?.debugForced === 'error') {
         debugForcedError = req.debugForcedResponse?.debugForcedError
