@@ -1,6 +1,5 @@
 import { NetClientAxios } from './ServiceAxiosNetClient'
 import { AxiosError, AxiosResponse } from 'axios'
-import { AxiosNetClientConfig } from './ServiceAxiosNetClient.Types'
 import ServiceClient from '../base/ServiceClient'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
 import { DispatchNJ } from '../redux/Types'
@@ -18,6 +17,9 @@ import {
 } from '../base/ResponseInterceptorUtils.Types'
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
+import * as Types from './ServiceAxiosNetClient.Types'
+
+export type AxiosNetClientConfig = Types.AxiosNetClientConfig
 
 export type AxiosInterceptorRequestSuccessInputFunctionType<StateType> = InterceptorRequestSuccessInputFunction<
   StateType,

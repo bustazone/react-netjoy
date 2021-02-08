@@ -1,6 +1,6 @@
 {
   "name": "react-netjoy",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Network client easy and powerful",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",

@@ -3,7 +3,7 @@ import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
 import { DispatchNJ } from '../redux/Types'
 import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
-import { DebugResponse, DebugError, DebugNetClientConfig } from './ServiceDebugNetClient.Types'
+import { DebugResponse, DebugError } from './ServiceDebugNetClient.Types'
 import { NetClientDebug } from './ServiceDebugNetClient'
 import {
   InterceptorRequestErrorInputFunction,
@@ -17,6 +17,9 @@ import {
 } from '../base/ResponseInterceptorUtils.Types'
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
+import * as Types from './ServiceDebugNetClient.Types'
+
+export type DebugNetClientConfig = Types.DebugNetClientConfig
 
 export type DebugInterceptorRequestSuccessInputFunctionType<StateType> = InterceptorRequestSuccessInputFunction<
   StateType,

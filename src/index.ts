@@ -1,13 +1,8 @@
-import { getServiceClientMiddleware, loggerMiddleware } from './redux/NetworkMiddleware'
 import request_budget_component from './request_budget_component/View'
 import * as axios from './axios'
 import * as debug from './debug'
+import * as redux from './redux'
 import { extractPropertiesFromJsonObject } from './utils/ServiceBody.Utils'
-
-const redux = {
-  getServiceClientMiddleware,
-  loggerMiddleware,
-}
 
 const utils = {
   extractPropertiesFromJsonObject,
