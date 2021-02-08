@@ -1,12 +1,13 @@
 import { DispatchNJ, OutActionFailure, OutActionStarted, OutActionSuccess } from './Types'
 import { RequestActionFromObject } from './ReduxRequestAction'
 import { ReduxActionInterface } from './ReduxRequestAction.Types'
+import { RequestInterface } from '../base/Request.Types'
 
-export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
+export function adaptRequestFromReduxAction<StateType, ResponseType, ErrorType>(
   _getState: () => StateType,
   next: DispatchNJ,
   action: ReduxActionInterface<StateType, ResponseType, ErrorType>,
-): ReduxActionInterface<StateType, ResponseType, ErrorType> {
+): RequestInterface<StateType, ResponseType, ErrorType> {
   const call = RequestActionFromObject(action)
   call.onStart = () => {
     if (call.startedReqType) {
@@ -36,5 +37,5 @@ export function adaptCallToRedux<StateType, ResponseType, ErrorType>(
     method(error)
   }
   call.onFailure = newOnFailure(call.failureReqType, call.onFailure)
-  return call.getAction()
+  return call
 }

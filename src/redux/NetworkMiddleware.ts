@@ -1,10 +1,9 @@
 import ServiceClient from '../base/ServiceClient'
 import { Action, Middleware, MiddlewareAPI } from 'redux'
 import { NetClientConstructor, NetClientConfigWithID } from '../base/CommonTypes'
-import { adaptCallToRedux } from './Redux.Utils'
+import { adaptRequestFromReduxAction } from './Redux.Utils'
 import { ActionNJ, DispatchNJ } from './Types'
 import { ReduxActionInterface, ReduxCallObjectInterfaceLiteral } from './ReduxRequestAction.Types'
-import { RequestActionFromObject } from './ReduxRequestAction'
 import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
 
@@ -47,12 +46,10 @@ export function getServiceClientMiddleware<
       debugPrint,
     )
     middleware.executeRequest(
-      RequestActionFromObject<StateType, ResponseType, ErrorType>(
-        adaptCallToRedux<StateType, ResponseType, ErrorType>(
-          api.getState,
-          next,
-          <ReduxActionInterface<StateType, ResponseType, ErrorType>>action,
-        ),
+      adaptRequestFromReduxAction<StateType, ResponseType, ErrorType>(
+        api.getState,
+        next,
+        <ReduxActionInterface<StateType, ResponseType, ErrorType>>action,
       ),
     )
   }
