@@ -19,7 +19,7 @@ class RequestBudgetComponent<
     this.netClient = props.netClient
   }
 
-  executeRequest(request: RequestInterface<StateType, ResponseType, ErrorType>): string {
+  executeRequest(request: RequestInterface<StateType, ResponseType, ErrorType, any, any>): string {
     // Usamos el netclient para hacer la llamada
     const newRequest = {
       ...request,
@@ -48,7 +48,6 @@ class RequestBudgetComponent<
 
   cancelRequestsByReqId(reqId: string) {
     // cancel all request in the array
-    // TODO excep
     const requestData = this.requestList.find(item => {
       return item.call.reqId === reqId
     })

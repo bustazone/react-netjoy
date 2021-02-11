@@ -2,7 +2,6 @@ import { NetClientAxios } from './ServiceAxiosNetClient'
 import { AxiosError, AxiosResponse } from 'axios'
 import ServiceClient from '../base/ServiceClient'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
-import { DispatchNJ } from '../redux/Types'
 import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
 import {
@@ -18,6 +17,7 @@ import {
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
 import * as Types from './ServiceAxiosNetClient.Types'
+import { Dispatch } from 'redux'
 
 export type AxiosNetClientConfig = Types.AxiosNetClientConfig
 
@@ -53,19 +53,20 @@ export class AxiosRequestInterceptorList<State> extends RequestInterceptorList<S
 
 export class AxiosResponseInterceptorList<State> extends ResponseInterceptorList<State, AxiosNetClientConfig, AxiosResponse, AxiosError> {}
 
-export function getAxiosEmptyRequest<State>() {
-  return new Request<State, AxiosResponse, AxiosError>()
+export function getAxiosEmptyRequest<State, DomainResponseType, DomainErrorType>() {
+  return new Request<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>()
 }
 
-export function getAxiosEmptyRequestAction<State>(req?: Request<State, AxiosResponse, AxiosError>) {
-  return new ReduxRequest<State, AxiosResponse, AxiosError>(req)
+export function getAxiosEmptyRequestAction<State, DomainResponseType, DomainErrorType>(
+  req?: Request<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>,
+) {
+  return new ReduxRequest<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>(req)
 }
 
 export function getAxiosNewClient<State>(
   baseUrl: string,
   state: () => State,
   baseHeaders: { [key: string]: string },
-  checkConnectionLost?: () => boolean,
   requestInterceptorList: RequestInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
   responseInterceptorList: ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
   debugPrint: boolean = false,
@@ -75,7 +76,6 @@ export function getAxiosNewClient<State>(
     baseUrl,
     state,
     baseHeaders,
-    checkConnectionLost,
     requestInterceptorList,
     responseInterceptorList,
     debugPrint,
@@ -85,14 +85,13 @@ export function getAxiosNewClient<State>(
 export function getAxiosNewClientMiddleware<State>(
   baseUrl: string,
   baseHeaders: { [key: string]: string },
-  checkConnectionLost?: () => boolean,
   requestInterceptorList: (
     getState: () => State,
-    next: DispatchNJ,
+    next: Dispatch,
   ) => RequestInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => () => [],
   responseInterceptorList: (
     getState: () => State,
-    next: DispatchNJ,
+    next: Dispatch,
   ) => ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => () => [],
   debugPrint: boolean = false,
 ) {
@@ -101,7 +100,6 @@ export function getAxiosNewClientMiddleware<State>(
     baseUrl,
     baseHeaders,
     debugPrint,
-    checkConnectionLost,
     requestInterceptorList,
     responseInterceptorList,
   )

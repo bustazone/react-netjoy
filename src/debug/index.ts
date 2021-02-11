@@ -1,6 +1,5 @@
 import ServiceClient from '../base/ServiceClient'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
-import { DispatchNJ } from '../redux/Types'
 import { ReduxRequest } from '../redux/ReduxRequestAction'
 import { Request } from '../base/Request'
 import { DebugResponse, DebugError } from './ServiceDebugNetClient.Types'
@@ -18,6 +17,7 @@ import {
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
 import * as Types from './ServiceDebugNetClient.Types'
+import { Dispatch } from 'redux';
 
 export type DebugNetClientConfig = Types.DebugNetClientConfig
 
@@ -53,46 +53,37 @@ export class DebugRequestInterceptorList<State> extends RequestInterceptorList<S
 
 export class DebugResponseInterceptorList<State> extends ResponseInterceptorList<State, DebugNetClientConfig, DebugResponse, DebugError> {}
 
-export function getDebugEmptyRequest<State>() {
-  return new Request<State, DebugResponse, DebugError>()
+export function getDebugEmptyRequest<State, DomainResponseType, DomainErrorType>() {
+  return new Request<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>()
 }
 
-export function getDebugEmptyRequestAction<State>(req?: Request<State, DebugResponse, DebugError>) {
-  return new ReduxRequest<State, DebugResponse, DebugError>(req)
+export function getDebugEmptyRequestAction<State, DomainResponseType, DomainErrorType>(
+  req?: Request<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>,
+) {
+  return new ReduxRequest<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>(req)
 }
 
 export function getDebugNewClient<State>(
   baseUrl: string,
   state: () => State,
   baseHeaders: { [key: string]: string },
-  checkConnectionLost?: () => boolean,
   requestInterceptorList: RequestInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => [],
   responseInterceptorList: ResponseInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => [],
   debugPrint: boolean = false,
 ) {
-  return new ServiceClient(
-    NetClientDebug,
-    baseUrl,
-    state,
-    baseHeaders,
-    checkConnectionLost,
-    requestInterceptorList,
-    responseInterceptorList,
-    debugPrint,
-  )
+  return new ServiceClient(NetClientDebug, baseUrl, state, baseHeaders, requestInterceptorList, responseInterceptorList, debugPrint)
 }
 
 export function getDebugNewClientMiddleware<State>(
   baseUrl: string,
   baseHeaders: { [key: string]: string },
-  checkConnectionLost?: () => boolean,
   requestInterceptorList: (
     getState: () => State,
-    next: DispatchNJ,
+    next: Dispatch,
   ) => RequestInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => () => [],
   responseInterceptorList: (
     getState: () => State,
-    next: DispatchNJ,
+    next: Dispatch,
   ) => ResponseInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => () => [],
   debugPrint: boolean = false,
 ) {
@@ -101,7 +92,6 @@ export function getDebugNewClientMiddleware<State>(
     baseUrl,
     baseHeaders,
     debugPrint,
-    checkConnectionLost,
     requestInterceptorList,
     responseInterceptorList,
   )

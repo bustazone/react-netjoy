@@ -1,14 +1,14 @@
 import { API_CALL, ReduxActionInterface, ReduxRequestActionInterface, ReduxCallObjectInterfaceLiteral } from './ReduxRequestAction.Types'
 import { Request } from '../base/Request'
 
-export class ReduxRequest<StateType, ResponseType, ErrorType>
-  extends Request<StateType, ResponseType, ErrorType>
-  implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType> {
+export class ReduxRequest<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>
+  extends Request<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>
+  implements ReduxRequestActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
   startedReqType?: string
   successReqType?: string
   failureReqType?: string
 
-  constructor(req?: Request<StateType, ResponseType, ErrorType>) {
+  constructor(req?: Request<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>) {
     super()
     super.reqId = req ? req.reqId : ''
     super.setEndpointFromState = req ? req.setEndpointFromState : undefined
@@ -24,7 +24,7 @@ export class ReduxRequest<StateType, ResponseType, ErrorType>
     super.debugForcedResponse = req ? req.debugForcedResponse : { debugForced: 'disabled' }
   }
 
-  getAction = (): ReduxActionInterface<StateType, ResponseType, ErrorType> => {
+  getAction = (): ReduxActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> => {
     if (this.setEndpointFromState !== undefined) {
       return {
         type: ReduxCallObjectInterfaceLiteral,
@@ -52,14 +52,14 @@ export class ReduxRequest<StateType, ResponseType, ErrorType>
   }
 }
 
-export function RequestActionFromObject<StateType, ResponseType, ErrorType>(
-  objectAction: ReduxActionInterface<StateType, ResponseType, ErrorType>,
-): ReduxRequest<StateType, ResponseType, ErrorType> {
+export function RequestActionFromObject<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>(
+  objectAction: ReduxActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+): ReduxRequest<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
   const object = objectAction[API_CALL]
   if (object === undefined) {
     throw new Error(`The object action in incorrect: ${JSON.stringify(objectAction)}`)
   }
-  const request = new ReduxRequest<StateType, ResponseType, ErrorType>()
+  const request = new ReduxRequest<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>()
   if ('reqId' in object) request.reqId = object.reqId
   if ('setEndpointFromState' in object) request.setEndpointFromState = object.setEndpointFromState
   if ('method' in object) request.method = object.method

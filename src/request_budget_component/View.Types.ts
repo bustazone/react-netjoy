@@ -2,7 +2,7 @@ import { NetClientConfigWithID, ServiceClientInterface } from '../base/CommonTyp
 import { RequestInterface } from '../base/Request.Types'
 
 export type RequestType<StateType, ResponseType, ErrorType> = {
-  call: RequestInterface<StateType, ResponseType, ErrorType>
+  call: RequestInterface<StateType, ResponseType, ErrorType, any, any>
   cancel?: () => void
 }
 

@@ -45,9 +45,10 @@ export interface ServiceClientInterface<
   ErrorType
 > {
   getState: () => StateType
-  checkConnectionLost?: () => boolean
   debugPrint: boolean
   netClient: NetClientInterface<ResponseType, ErrorType>
   executeDirectCallWithConfig<T extends NetClientConfigWithID<ResponseType, ErrorType>>(config: T): Promise<ResponseType>
-  executeRequest(req: RequestInterface<StateType, ResponseType, ErrorType>): () => void | undefined
+  executeRequest<DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+  ): () => void | undefined
 }

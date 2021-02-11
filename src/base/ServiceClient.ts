@@ -6,7 +6,6 @@ import { ResponseInterceptorListType } from './ResponseInterceptorUtils.Types'
 class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>, ResponseType, ErrorType>
   implements ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType> {
   getState: () => StateType
-  checkConnectionLost?: () => boolean
   debugPrint: boolean
   netClient: NetClientInterface<ResponseType, ErrorType>
 
@@ -15,14 +14,12 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     baseUrl: string,
     getState: () => StateType,
     baseHeaders: { [key: string]: string },
-    checkConnectionLost?: () => boolean,
     requestInterceptorList: RequestInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     responseInterceptorList: ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     debugPrint: boolean = false,
   ) {
     this.getState = getState
     this.debugPrint = debugPrint
-    this.checkConnectionLost = checkConnectionLost
     this.netClient = new netClientCtor(
       baseUrl,
       requestInterceptorList(this),
@@ -33,13 +30,17 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     )
   }
 
-  onInnerSuccess = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (response: ResponseType) => {
+  onInnerSuccess = <DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+  ) => (response: ResponseType) => {
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final response before transformation: ', response)
     }
-    let transformedResponse = response
+    let transformedResponse: DomainResponseType
     if (req.transformResponseDataWithState) {
       transformedResponse = req.transformResponseDataWithState(response, this.getState())
+    } else {
+      transformedResponse = <DomainResponseType>(<unknown>response)
     }
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final response after transformation: ', transformedResponse)
@@ -49,13 +50,17 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     }
   }
 
-  onInnerFailure = (req: RequestInterface<StateType, ResponseType, ErrorType>) => (error: ErrorType) => {
+  onInnerFailure = <DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+  ) => (error: ErrorType) => {
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final error before transformation: ', error)
     }
-    let transformedError = error
+    let transformedError: DomainErrorType
     if (req.transformErrorDataWithState) {
       transformedError = req.transformErrorDataWithState(error, this.getState())
+    } else {
+      transformedError = <DomainErrorType>(<unknown>error)
     }
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final error after transformation: ', transformedError)
@@ -65,26 +70,21 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     }
   }
 
-  onInnerFinish = (req: RequestInterface<StateType, ResponseType, ErrorType>) => () => {
+  onInnerFinish = <DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+  ) => () => {
     if (req.onFinish) {
       req.onFinish()
     }
   }
 
   executeDirectCallWithConfig<T extends NetClientConfigWithID<ResponseType, ErrorType>>(config: T): Promise<ResponseType> {
-    // if (this.checkConnectionLost !== undefined) {
-    //   if (!this.checkConnectionLost(this.next)) {
-    //     this.onFailure({
-    //       innerMessage: `Failure Before started ${config.reqId} due to lack of connection`,
-    //     })
-    //     return
-    //   }
-    // }
-
     return this.netClient.executeDirectCallWithConfig<T>(config)
   }
 
-  executeRequest(req: RequestInterface<StateType, ResponseType, ErrorType>) {
+  executeRequest<DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+  ) {
     let body = ''
     if (req.setBodyFromState) {
       body = req.setBodyFromState(this.getState())
@@ -92,14 +92,6 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
 
     if (this.debugPrint) {
       console.log(`[NetJoyBase] Started req ${req.reqId} : ${JSON.stringify(req)}`)
-    }
-
-    // Chick if the connection is ready
-    if (this.checkConnectionLost && !this.checkConnectionLost()) {
-      req.onFailure({
-        innerMessage: `Failure Before started ${req.reqId} due to lack of connection`,
-      })
-      return () => {}
     }
 
     // Select debug mode response

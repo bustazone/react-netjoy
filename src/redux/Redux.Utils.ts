@@ -1,13 +1,14 @@
-import { DispatchNJ, OutActionFailure, OutActionStarted, OutActionSuccess } from './Types'
+import { OutActionFailure, OutActionStarted, OutActionSuccess } from './Types'
 import { RequestActionFromObject } from './ReduxRequestAction'
 import { ReduxActionInterface } from './ReduxRequestAction.Types'
 import { RequestInterface } from '../base/Request.Types'
+import { Dispatch } from 'redux'
 
-export function adaptRequestFromReduxAction<StateType, ResponseType, ErrorType>(
+export function adaptRequestFromReduxAction<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>(
   _getState: () => StateType,
-  next: DispatchNJ,
-  action: ReduxActionInterface<StateType, ResponseType, ErrorType>,
-): RequestInterface<StateType, ResponseType, ErrorType> {
+  next: Dispatch,
+  action: ReduxActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
+): RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
   const call = RequestActionFromObject(action)
   call.onStart = () => {
     if (call.startedReqType) {
@@ -15,9 +16,9 @@ export function adaptRequestFromReduxAction<StateType, ResponseType, ErrorType>(
       next(actionStart)
     }
   }
-  const newOnSuccess = (type: string | undefined, method: (response: object) => void) => (response: object) => {
+  const newOnSuccess = (type: string | undefined, method: (response: DomainResponseType) => void) => (response: DomainResponseType) => {
     if (type) {
-      const out: OutActionSuccess<any> = {
+      const out: OutActionSuccess<DomainResponseType> = {
         type: type,
         response: response,
       }
@@ -26,9 +27,9 @@ export function adaptRequestFromReduxAction<StateType, ResponseType, ErrorType>(
     method(response)
   }
   call.onSuccess = newOnSuccess(call.successReqType, call.onSuccess)
-  const newOnFailure = (type: string | undefined, method: (error: object) => void) => (error: object) => {
+  const newOnFailure = (type: string | undefined, method: (error: DomainErrorType) => void) => (error: DomainErrorType) => {
     if (type) {
-      const out: OutActionFailure<any> = {
+      const out: OutActionFailure<DomainErrorType> = {
         type: type,
         error: error,
       }
