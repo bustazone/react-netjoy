@@ -166,7 +166,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
 
   // For intermediate calls
   executeDirectCallWithConfig<T extends AxiosNetClientConfig>(config: T): Promise<AxiosResponse> {
-    return axios.create()(config)
+    return axios.request(config)
   }
 
   makeCallFromParams(
