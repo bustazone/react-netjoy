@@ -17,7 +17,7 @@ import {
 import { RequestInterceptorList } from '../base/RequestInterceptorUtils'
 import { ResponseInterceptorList } from '../base/ResponseInterceptorUtils'
 import * as Types from './ServiceDebugNetClient.Types'
-import { Dispatch } from 'redux';
+import { Dispatch } from 'redux'
 
 export type DebugNetClientConfig = Types.DebugNetClientConfig
 
@@ -70,8 +70,18 @@ export function getDebugNewClient<State>(
   requestInterceptorList: RequestInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => [],
   responseInterceptorList: ResponseInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => [],
   debugPrint: boolean = false,
+  timeoutMillis: number = 10000,
 ) {
-  return new ServiceClient(NetClientDebug, baseUrl, state, baseHeaders, requestInterceptorList, responseInterceptorList, debugPrint)
+  return new ServiceClient(
+    NetClientDebug,
+    baseUrl,
+    state,
+    baseHeaders,
+    requestInterceptorList,
+    responseInterceptorList,
+    debugPrint,
+    timeoutMillis,
+  )
 }
 
 export function getDebugNewClientMiddleware<State>(
@@ -86,12 +96,14 @@ export function getDebugNewClientMiddleware<State>(
     next: Dispatch,
   ) => ResponseInterceptorListType<State, DebugNetClientConfig, DebugResponse, DebugError> = () => () => [],
   debugPrint: boolean = false,
+  timeoutMillis: number = 10000,
 ) {
   return getServiceClientMiddleware<State, DebugNetClientConfig, DebugResponse, DebugError>(
     NetClientDebug,
     baseUrl,
     baseHeaders,
     debugPrint,
+    timeoutMillis,
     requestInterceptorList,
     responseInterceptorList,
   )

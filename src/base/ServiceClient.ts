@@ -17,6 +17,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     requestInterceptorList: RequestInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     responseInterceptorList: ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     debugPrint: boolean = false,
+    timeoutMillis?: number,
   ) {
     this.getState = getState
     this.debugPrint = debugPrint
@@ -25,7 +26,7 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
       requestInterceptorList(this),
       responseInterceptorList(this),
       baseHeaders,
-      undefined,
+      timeoutMillis,
       debugPrint,
     )
   }

@@ -45,7 +45,8 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
                 if (this.debugPrint) {
                   console.log(`[NetJoyBaseAxios] Rejected ${customConfig.reqId} request success interceptor #${index}`)
                 }
-                throw { ...error, config: newConfig }
+                if (!error.config) error.config = newConfig
+                throw error
               }
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Resolved ${customConfig.reqId} request success interceptor #${index}`)
@@ -70,7 +71,8 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
                 if (this.debugPrint) {
                   console.log(`[NetJoyBaseAxios] Rejected ${ff.reqId} request failure interceptor #${index}`)
                 }
-                throw { ...error, ...newCatchError }
+                if (!newCatchError.config) newCatchError.config = newConfig
+                throw newCatchError
               }
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Resolved ${ff.reqId} request failure interceptor #${index}`)
@@ -85,11 +87,27 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
         )
       })
 
+    this.instance.interceptors.request.use(
+      config => {
+        const ff = config as AxiosNetClientConfig
+        if (ff.debugForcedError || ff.debugForcedResponse) {
+          throw { config: config }
+        }
+        return config
+      },
+      async (error: AxiosError) => {
+        throw error
+      },
+    )
+
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
         const ff = response.config as AxiosNetClientConfig
         if (ff.debugForcedError) {
-          throw { ...ff.debugForcedError, config: response.config, response: response }
+          const eOut = ff.debugForcedError
+          eOut.config = response.config
+          eOut.response = response
+          throw eOut
         }
         if (ff.debugForcedResponse) {
           return { ...response, ...ff.debugForcedResponse }
@@ -99,7 +117,9 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
       async (error: AxiosError) => {
         const ff = error.config as AxiosNetClientConfig
         if (ff.debugForcedError) {
-          throw { ...error, ...ff.debugForcedError }
+          const eOut = ff.debugForcedError
+          eOut.config = error.config
+          throw eOut
         }
         if (ff.debugForcedResponse) {
           return { ...error.response, ...ff.debugForcedResponse }
@@ -123,7 +143,8 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Rejected ${ff.reqId} response success interceptor #${index}`)
               }
-              throw { ...error, response: response }
+              if (!error.response) error.response = newResponse
+              throw error
             }
             if (this.debugPrint) {
               console.log(`[NetJoyBaseAxios] Resolved ${ff.reqId} response success interceptor #${index}`)
@@ -148,7 +169,8 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Rejected ${ff.reqId} response failure interceptor #${index}`)
               }
-              throw { ...error, ...newCatchError }
+              if (!newCatchError.response) newCatchError.response = newResponse
+              throw newCatchError
             }
             if (this.debugPrint) {
               console.log(`[NetJoyBaseAxios] Resolved ${ff.reqId} response failure interceptor #${index}`)
@@ -165,7 +187,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
   }
 
   // For intermediate calls
-  executeDirectCallWithConfig<T extends AxiosNetClientConfig>(config: T): Promise<AxiosResponse> {
+  executeDirectCallWithConfig<T extends AxiosNetClientConfig>(config: T): Promise<AxiosResponse> | never {
     return axios.request(config)
   }
 

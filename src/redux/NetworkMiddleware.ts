@@ -16,6 +16,7 @@ export function getServiceClientMiddleware<
   baseUrl: string,
   baseHeaders: { [key: string]: string },
   debugPrint: boolean,
+  timeoutMillis: number,
   requestInterceptorList?: (
     getState: () => StateType,
     next: Dispatch,
@@ -41,6 +42,7 @@ export function getServiceClientMiddleware<
       requestInterceptorList ? requestInterceptorList(api.getState, next) : undefined,
       responseInterceptorList ? responseInterceptorList(api.getState, next) : undefined,
       debugPrint,
+      timeoutMillis,
     )
     middleware.executeRequest(
       adaptRequestFromReduxAction<StateType, ResponseType, ErrorType, any, any>(

@@ -70,6 +70,7 @@ export function getAxiosNewClient<State>(
   requestInterceptorList: RequestInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
   responseInterceptorList: ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
   debugPrint: boolean = false,
+  timeoutMillis: number = 10000,
 ) {
   return new ServiceClient<State, AxiosNetClientConfig, AxiosResponse, AxiosError>(
     NetClientAxios,
@@ -79,6 +80,7 @@ export function getAxiosNewClient<State>(
     requestInterceptorList,
     responseInterceptorList,
     debugPrint,
+    timeoutMillis,
   )
 }
 
@@ -94,12 +96,14 @@ export function getAxiosNewClientMiddleware<State>(
     next: Dispatch,
   ) => ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => () => [],
   debugPrint: boolean = false,
+  timeoutMillis: number = 10000,
 ) {
   return getServiceClientMiddleware<State, AxiosNetClientConfig, AxiosResponse, AxiosError>(
     NetClientAxios,
     baseUrl,
     baseHeaders,
     debugPrint,
+    timeoutMillis,
     requestInterceptorList,
     responseInterceptorList,
   )
