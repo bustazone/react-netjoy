@@ -1,6 +1,6 @@
 # react-netjoy
 
-Network middleware easy and powerful
+Network middleware easy and powerful.
 
 ## Installation
 
@@ -10,13 +10,7 @@ npm install react-netjoy
 
 ## Usage
 
-```js
-import ReactNetjoy from "react-netjoy";
-
-// ...
-
-const deviceName = await ReactNetjoy.getDeviceName();
-```
+🚧  (On Construction) 
 
 ## License
 
