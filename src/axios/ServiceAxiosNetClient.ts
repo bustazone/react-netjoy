@@ -115,6 +115,9 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
         return response
       },
       async (error: AxiosError) => {
+        if (axios.isCancel(error)) {
+          throw new Error('NetJoy: Canceled request')
+        }
         const ff = error.config as AxiosNetClientConfig
         if (ff.debugForcedError) {
           const eOut = ff.debugForcedError
