@@ -1,17 +1,12 @@
 import React, { FunctionComponent } from 'react'
 import { Text, View, TouchableOpacity } from 'react-native'
+import { ExampCompPropsType } from './View.Types';
 
-const ExampComp: FunctionComponent<{
-  data: string
-  info: string
-  func: () => void
-  setInfop: (i: string) => void
-}> = value => {
+const ExampComp: FunctionComponent<ExampCompPropsType> = value => {
   return (
     <View>
       <TouchableOpacity
         onPress={() => {
-          console.log('dddd0')
           value.func()
         }}
       >
@@ -19,7 +14,6 @@ const ExampComp: FunctionComponent<{
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          console.log('dddd1')
           value.setInfop('x')
         }}
       >

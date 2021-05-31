@@ -35,7 +35,7 @@ const GlobalDataPersistentSingleton = <Type>(keyName: string) => {
   }
 }
 
-export async function createGlobalDataPersistentSingleton<Type>({ keyName }: { keyName: string }) {
+export async function createGlobalDataPersistentSingleton<Type>(keyName: string) {
   const out = GlobalDataPersistentSingleton<Type>(keyName)
   await out.restore()
   return out

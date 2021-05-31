@@ -1,14 +1,8 @@
-import React, { FunctionComponent, useState } from 'react'
+import React, { FunctionComponent, PropsWithChildren, useState } from 'react';
 import { Alert } from 'react-native'
+import { Context2DataType } from './component_context_2.types';
 
-export type Context2DataType = {
-  data2: string
-  func2: () => void
-  info2: string
-  setInfop2: (_: string) => void
-}
-
-const initial = {
+const initial: Context2DataType = {
   data2: 'data',
   func2: () => {
     Alert.alert('22222')
@@ -18,7 +12,8 @@ const initial = {
 }
 
 export const Context2 = React.createContext(initial)
-const ExampHandler: FunctionComponent<{}> = props => {
+
+const ExampHandler: FunctionComponent<PropsWithChildren<{}>> = props => {
   const [info, setInfo] = useState('info2')
   function setInfop(i: string) {
     setInfo(i)
