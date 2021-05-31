@@ -1,19 +1,20 @@
 import { DebugForcedResponseType, RequestInterface } from './Request.Types'
+import { NetjoyError, NetjoyResponse } from './CommonTypes'
 
-export class Request<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>
-  implements RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
+export class Request<StateType, DomainResponseType, DomainErrorType>
+  implements RequestInterface<StateType, DomainResponseType, DomainErrorType> {
   reqId: string
-  setEndpointFromState?: (state: StateType) => string
+  setEndpointFromState?: (state?: StateType) => string
   method: string
-  setBodyFromState?: (state: StateType) => any
-  getHeadersFromState: (state: StateType) => { [key: string]: string }
+  setBodyFromState?: (state?: StateType) => any
+  getHeadersFromState: (state?: StateType) => { [key: string]: string }
   onStart: () => void
-  onSuccess: (response: DomainResponseType) => void
-  onFailure: (error: DomainErrorType) => void
+  onSuccess: (response: NetjoyResponse<any, DomainResponseType>) => void
+  onFailure: (error: NetjoyError<any, DomainErrorType>) => void
   onFinish: () => void
-  transformResponseDataWithState?: (response: ResponseType, state: StateType) => DomainResponseType
-  transformErrorDataWithState?: (error: ErrorType, state: StateType) => DomainErrorType
-  debugForcedResponse: DebugForcedResponseType<Partial<ResponseType>, Partial<ErrorType>>
+  transformResponseDataWithState?: (response: NetjoyResponse, state?: StateType) => DomainResponseType
+  transformErrorDataWithState?: (error: NetjoyError, state?: StateType) => DomainErrorType
+  debugForcedResponse: DebugForcedResponseType
 
   constructor() {
     this.reqId = ''

@@ -4,14 +4,11 @@ import { RequestBudgetComponentProps, RequestType } from './View.Types'
 import { randomID } from './View.Utils'
 import { RequestInterface } from '../base/Request.Types'
 
-class RequestBudgetComponent<
-  StateType,
-  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
-  ResponseType,
-  ErrorType
-> extends Component<RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>> {
+class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
+  RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>
+> {
   netClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>
-  requestList: RequestType<StateType, ResponseType, ErrorType>[] = []
+  requestList: RequestType<StateType>[] = []
 
   constructor(props: RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>) {
     super(props)
@@ -19,7 +16,7 @@ class RequestBudgetComponent<
     this.netClient = props.netClient
   }
 
-  executeRequest(request: RequestInterface<StateType, ResponseType, ErrorType, any, any>): string {
+  executeRequest(request: RequestInterface<StateType, any, any>): string {
     // Usamos el netclient para hacer la llamada
     const newRequest = {
       ...request,

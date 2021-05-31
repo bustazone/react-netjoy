@@ -2,8 +2,6 @@ import { NetClientAxios } from './ServiceAxiosNetClient'
 import { AxiosError, AxiosResponse } from 'axios'
 import ServiceClient from '../base/ServiceClient'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
-import { ReduxRequest } from '../redux/ReduxRequestAction'
-import { Request } from '../base/Request'
 import {
   InterceptorRequestErrorInputFunction,
   InterceptorRequestSuccessInputFunction,
@@ -53,58 +51,50 @@ export class AxiosRequestInterceptorList<State> extends RequestInterceptorList<S
 
 export class AxiosResponseInterceptorList<State> extends ResponseInterceptorList<State, AxiosNetClientConfig, AxiosResponse, AxiosError> {}
 
-export function getAxiosEmptyRequest<State, DomainResponseType, DomainErrorType>() {
-  return new Request<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>()
+export type GetAxiosNewClientOptionsType<StateType = any> = {
+  state?: () => StateType
+  baseHeaders?: { [key: string]: string }
+  requestInterceptorList?: RequestInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
+  responseInterceptorList?: ResponseInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
+  debugPrint?: boolean
+  timeoutMillis?: number
 }
 
-export function getAxiosEmptyRequestAction<State, DomainResponseType, DomainErrorType>(
-  req?: Request<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>,
-) {
-  return new ReduxRequest<State, AxiosResponse, AxiosError, DomainResponseType, DomainErrorType>(req)
-}
-
-export function getAxiosNewClient<State>(
-  baseUrl: string,
-  state: () => State,
-  baseHeaders: { [key: string]: string },
-  requestInterceptorList: RequestInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
-  responseInterceptorList: ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => [],
-  debugPrint: boolean = false,
-  timeoutMillis: number = 10000,
-) {
-  return new ServiceClient<State, AxiosNetClientConfig, AxiosResponse, AxiosError>(
+export function getAxiosNewClient<StateType = any>(baseUrl: string, options?: GetAxiosNewClientOptionsType<StateType>) {
+  return new ServiceClient<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>(
     NetClientAxios,
     baseUrl,
-    state,
-    baseHeaders,
-    requestInterceptorList,
-    responseInterceptorList,
-    debugPrint,
-    timeoutMillis,
+    options?.state,
+    options?.baseHeaders,
+    options?.requestInterceptorList,
+    options?.responseInterceptorList,
+    options?.debugPrint,
+    options?.timeoutMillis,
   )
 }
 
-export function getAxiosNewClientMiddleware<State>(
-  baseUrl: string,
-  baseHeaders: { [key: string]: string },
+export type GetAxiosNewClientMiddlewareOptionsType<StateType> = {
+  baseHeaders?: { [key: string]: string }
   requestInterceptorList: (
-    getState: () => State,
+    getState: () => StateType,
     next: Dispatch,
-  ) => RequestInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => () => [],
+  ) => RequestInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
   responseInterceptorList: (
-    getState: () => State,
+    getState: () => StateType,
     next: Dispatch,
-  ) => ResponseInterceptorListType<State, AxiosNetClientConfig, AxiosResponse, AxiosError> = () => () => [],
-  debugPrint: boolean = false,
-  timeoutMillis: number = 10000,
-) {
-  return getServiceClientMiddleware<State, AxiosNetClientConfig, AxiosResponse, AxiosError>(
+  ) => ResponseInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
+  debugPrint?: boolean
+  timeoutMillis?: number
+}
+
+export function getAxiosNewClientMiddleware<StateType>(baseUrl: string, options?: GetAxiosNewClientMiddlewareOptionsType<StateType>) {
+  return getServiceClientMiddleware<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>(
     NetClientAxios,
     baseUrl,
-    baseHeaders,
-    debugPrint,
-    timeoutMillis,
-    requestInterceptorList,
-    responseInterceptorList,
+    options?.baseHeaders,
+    options?.debugPrint,
+    options?.timeoutMillis,
+    options?.requestInterceptorList,
+    options?.responseInterceptorList,
   )
 }

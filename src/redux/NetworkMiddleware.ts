@@ -6,17 +6,12 @@ import { ReduxActionInterface, ReduxCallObjectInterfaceLiteral } from './ReduxRe
 import { RequestInterceptorListType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorListType } from '../base/ResponseInterceptorUtils.Types'
 
-export function getServiceClientMiddleware<
-  StateType,
-  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
-  ResponseType,
-  ErrorType
->(
+export function getServiceClientMiddleware<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
   baseUrl: string,
-  baseHeaders: { [key: string]: string },
-  debugPrint: boolean,
-  timeoutMillis: number,
+  baseHeaders?: { [key: string]: string },
+  debugPrint?: boolean,
+  timeoutMillis?: number,
   requestInterceptorList?: (
     getState: () => StateType,
     next: Dispatch,
@@ -45,11 +40,7 @@ export function getServiceClientMiddleware<
       timeoutMillis,
     )
     middleware.executeRequest(
-      adaptRequestFromReduxAction<StateType, ResponseType, ErrorType, any, any>(
-        api.getState,
-        next,
-        <ReduxActionInterface<StateType, ResponseType, ErrorType, any, any>>action,
-      ),
+      adaptRequestFromReduxAction<StateType, any, any>(api.getState, next, <ReduxActionInterface<StateType, any, any>>action),
     )
   }
 }

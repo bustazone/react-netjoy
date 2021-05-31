@@ -8,12 +8,7 @@ import {
   ResponseInterceptorListType,
 } from './ResponseInterceptorUtils.Types'
 
-function createResponseInterceptorSuccessFunction<
-  StateType,
-  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
-  ResponseType,
-  ErrorType
->(
+function createResponseInterceptorSuccessFunction<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   method: InterceptorResponseSuccessInputFunction<StateType, ConfigType, ResponseType, ErrorType> | undefined,
   serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
 ): InterceptorResponseSuccessFunction<ResponseType> {
@@ -26,12 +21,7 @@ function createResponseInterceptorSuccessFunction<
   }
 }
 
-function createResponseInterceptorErrorFunction<
-  StateType,
-  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
-  ResponseType,
-  ErrorType
->(
+function createResponseInterceptorErrorFunction<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   method: InterceptorResponseErrorInputFunction<StateType, ConfigType, ResponseType, ErrorType> | undefined,
   serviceClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>,
 ): InterceptorResponseErrorFunction<ResponseType, ErrorType> {
@@ -44,7 +34,7 @@ function createResponseInterceptorErrorFunction<
   }
 }
 
-function createResponseInterceptor<StateType, ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>, ResponseType, ErrorType>(
+function createResponseInterceptor<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>(
   onSuccess?: InterceptorResponseSuccessInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
   onFailure?: InterceptorResponseErrorInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
 ): ResponseInterceptorFunctionType<StateType, ConfigType, ResponseType, ErrorType> {
@@ -54,12 +44,7 @@ function createResponseInterceptor<StateType, ConfigType extends NetClientConfig
   })
 }
 
-export class ResponseInterceptorList<
-  StateType,
-  ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>,
-  ResponseType,
-  ErrorType
-> {
+export class ResponseInterceptorList<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
   private list: ResponseInterceptorFunctionType<StateType, ConfigType, ResponseType, ErrorType>[] = []
 
   private createResponseInterceptorList(

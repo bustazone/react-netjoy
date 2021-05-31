@@ -1,19 +1,26 @@
 import { RequestInterface } from './Request.Types'
-import { NetClientConstructor, NetClientInterface, ServiceClientInterface, NetClientConfigWithID } from './CommonTypes'
+import {
+  NetClientConstructor,
+  NetClientInterface,
+  ServiceClientInterface,
+  NetClientConfigWithID,
+  NetjoyResponse,
+  NetjoyError,
+} from './CommonTypes'
 import { RequestInterceptorListType } from './RequestInterceptorUtils.Types'
 import { ResponseInterceptorListType } from './ResponseInterceptorUtils.Types'
 
-class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<ResponseType, ErrorType>, ResponseType, ErrorType>
+class ServiceClient<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>
   implements ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType> {
-  getState: () => StateType
+  getState?: () => StateType
   debugPrint: boolean
   netClient: NetClientInterface<ResponseType, ErrorType>
 
   constructor(
     netClientCtor: NetClientConstructor<ConfigType, ResponseType, ErrorType>,
     baseUrl: string,
-    getState: () => StateType,
-    baseHeaders: { [key: string]: string },
+    getState: (() => StateType) | undefined,
+    baseHeaders: { [key: string]: string } = {},
     requestInterceptorList: RequestInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     responseInterceptorList: ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType> = () => [],
     debugPrint: boolean = false,
@@ -31,35 +38,35 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     )
   }
 
-  onInnerSuccess = <DomainResponseType, DomainErrorType>(
-    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
-  ) => (response: ResponseType) => {
+  onInnerSuccess = <DomainResponseType, DomainErrorType>(req: RequestInterface<StateType, DomainResponseType, DomainErrorType>) => (
+    response: NetjoyResponse<ResponseType, DomainResponseType>,
+  ) => {
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final response before transformation: ', response)
     }
-    let transformedResponse: DomainResponseType
+    let transformedResponseData: DomainResponseType
     if (req.transformResponseDataWithState) {
-      transformedResponse = req.transformResponseDataWithState(response, this.getState())
+      transformedResponseData = req.transformResponseDataWithState(response, this.getState ? this.getState() : undefined)
     } else {
-      transformedResponse = <DomainResponseType>(<unknown>response)
+      transformedResponseData = <DomainResponseType>(<unknown>response.data)
     }
     if (this.debugPrint) {
-      console.log('[NetJoyBase] Final response after transformation: ', transformedResponse)
+      console.log('[NetJoyBase] Final response after transformation: ', transformedResponseData)
     }
     if (req.onSuccess) {
-      req.onSuccess(transformedResponse)
+      req.onSuccess({ ...response, data: transformedResponseData })
     }
   }
 
-  onInnerFailure = <DomainResponseType, DomainErrorType>(
-    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
-  ) => (error: ErrorType) => {
+  onInnerFailure = <DomainResponseType, DomainErrorType>(req: RequestInterface<StateType, DomainResponseType, DomainErrorType>) => (
+    error: NetjoyError<ErrorType, DomainErrorType>,
+  ) => {
     if (this.debugPrint) {
       console.log('[NetJoyBase] Final error before transformation: ', error)
     }
     let transformedError: DomainErrorType
     if (req.transformErrorDataWithState) {
-      transformedError = req.transformErrorDataWithState(error, this.getState())
+      transformedError = req.transformErrorDataWithState(error, this.getState ? this.getState() : undefined)
     } else {
       transformedError = <DomainErrorType>(<unknown>error)
     }
@@ -67,28 +74,26 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
       console.log('[NetJoyBase] Final error after transformation: ', transformedError)
     }
     if (req.onFailure) {
-      req.onFailure(transformedError)
+      req.onFailure({ ...error, error: transformedError })
     }
   }
 
-  onInnerFinish = <DomainResponseType, DomainErrorType>(
-    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
-  ) => () => {
+  onInnerFinish = <DomainResponseType, DomainErrorType>(req: RequestInterface<StateType, DomainResponseType, DomainErrorType>) => () => {
     if (req.onFinish) {
       req.onFinish()
     }
   }
 
-  executeDirectCallWithConfig<T extends NetClientConfigWithID<ResponseType, ErrorType>>(config: T): Promise<ResponseType> {
+  executeDirectCallWithConfig<T extends NetClientConfigWithID>(config: T): Promise<ResponseType> {
     return this.netClient.executeDirectCallWithConfig<T>(config)
   }
 
   executeRequest<DomainResponseType, DomainErrorType>(
-    req: RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>,
-  ) {
+    req: RequestInterface<StateType, DomainResponseType, DomainErrorType>,
+  ): (() => void) | undefined {
     let body = ''
     if (req.setBodyFromState) {
-      body = req.setBodyFromState(this.getState())
+      body = req.setBodyFromState(this.getState ? this.getState() : undefined)
     }
 
     if (this.debugPrint) {
@@ -96,8 +101,8 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     }
 
     // Select debug mode response
-    let debugForcedResponse: Partial<ResponseType> | undefined
-    let debugForcedError: Partial<ErrorType> | undefined
+    let debugForcedResponse: NetjoyResponse<ResponseType, DomainResponseType> | undefined
+    let debugForcedError: NetjoyError<ErrorType, DomainErrorType> | undefined
     if (req.debugForcedResponse?.debugForced) {
       if (req.debugForcedResponse?.debugForced === 'error') {
         debugForcedError = req.debugForcedResponse?.debugForcedError
@@ -109,10 +114,10 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
     // Execute the call
     return this.netClient.makeCallFromParams(
       req.reqId,
-      req.setEndpointFromState!(this.getState()),
+      req.setEndpointFromState!(this.getState ? this.getState() : undefined),
       req.method,
       body,
-      req.getHeadersFromState(this.getState()),
+      req.getHeadersFromState(this.getState ? this.getState() : undefined),
       req.onStart,
       this.onInnerSuccess(req),
       this.onInnerFailure(req),
@@ -120,6 +125,25 @@ class ServiceClient<StateType, ConfigType extends NetClientConfigWithID<Response
       debugForcedResponse,
       debugForcedError,
     )
+  }
+
+  executeLastestQueue: { [key: string]: () => void } = {}
+
+  executeLastestRequest<DomainResponseType, DomainErrorType>(
+    req: RequestInterface<StateType, DomainResponseType, DomainErrorType>,
+    sequenceId?: string,
+  ): (() => void) | undefined {
+    const actualSequenceId = sequenceId || req.reqId
+    if (this.executeLastestQueue[actualSequenceId]) this.executeLastestQueue[actualSequenceId]()
+    req.onFinish = () => {
+      delete this.executeLastestQueue[actualSequenceId]
+      req.onFinish()
+    }
+    const cancelReq = this.executeRequest(req)
+    if (cancelReq) {
+      this.executeLastestQueue[actualSequenceId] = cancelReq
+    }
+    return cancelReq
   }
 }
 

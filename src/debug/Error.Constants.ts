@@ -1,0 +1,2 @@
+export const DEBUG_ERROR_CODE = -1
+export const DEBUG_CANCELLED_REQUEST_ERROR_CODE = -1000

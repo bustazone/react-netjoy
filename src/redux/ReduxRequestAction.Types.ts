@@ -4,15 +4,15 @@ export const API_CALL = 'API_CALL'
 
 export const ReduxCallObjectInterfaceLiteral = 'react-netjoy-action'
 
-export interface ReduxRequestActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>
-  extends RequestInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
+export interface ReduxRequestActionInterface<StateType, DomainResponseType, DomainErrorType>
+  extends RequestInterface<StateType, DomainResponseType, DomainErrorType> {
   startedReqType?: string
   successReqType?: string
   failureReqType?: string
-  getAction: () => ReduxActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>
+  getAction: () => ReduxActionInterface<StateType, DomainResponseType, DomainErrorType>
 }
 
-export interface ReduxActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType> {
+export interface ReduxActionInterface<StateType, DomainResponseType, DomainErrorType> {
   type: typeof ReduxCallObjectInterfaceLiteral
-  [API_CALL]: Omit<ReduxRequestActionInterface<StateType, ResponseType, ErrorType, DomainResponseType, DomainErrorType>, 'getAction'>
+  [API_CALL]: Omit<ReduxRequestActionInterface<StateType, DomainResponseType, DomainErrorType>, 'getAction'>
 }

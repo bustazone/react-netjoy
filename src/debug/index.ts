@@ -1,7 +1,5 @@
 import ServiceClient from '../base/ServiceClient'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
-import { ReduxRequest } from '../redux/ReduxRequestAction'
-import { Request } from '../base/Request'
 import { DebugResponse, DebugError } from './ServiceDebugNetClient.Types'
 import { NetClientDebug } from './ServiceDebugNetClient'
 import {
@@ -52,16 +50,6 @@ export type DebugInterceptorResponseErrorInputFunctionType<StateType> = Intercep
 export class DebugRequestInterceptorList<State> extends RequestInterceptorList<State, DebugNetClientConfig, DebugResponse, DebugError> {}
 
 export class DebugResponseInterceptorList<State> extends ResponseInterceptorList<State, DebugNetClientConfig, DebugResponse, DebugError> {}
-
-export function getDebugEmptyRequest<State, DomainResponseType, DomainErrorType>() {
-  return new Request<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>()
-}
-
-export function getDebugEmptyRequestAction<State, DomainResponseType, DomainErrorType>(
-  req?: Request<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>,
-) {
-  return new ReduxRequest<State, DebugResponse, DebugError, DomainResponseType, DomainErrorType>(req)
-}
 
 export function getDebugNewClient<State>(
   baseUrl: string,
