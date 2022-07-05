@@ -1,6 +1,6 @@
 import { NetClientAxios } from './ServiceAxiosNetClient'
 import { AxiosError, AxiosResponse } from 'axios'
-import ServiceClient from '../base/ServiceClient'
+import { GetNewClientOptionsType, ServiceClient } from '../base'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
 import {
   InterceptorRequestErrorInputFunction,
@@ -51,16 +51,17 @@ export class AxiosRequestInterceptorList<State> extends RequestInterceptorList<S
 
 export class AxiosResponseInterceptorList<State> extends ResponseInterceptorList<State, AxiosNetClientConfig, AxiosResponse, AxiosError> {}
 
-export type GetAxiosNewClientOptionsType<StateType = any> = {
-  state?: () => StateType
-  baseHeaders?: { [key: string]: string }
-  requestInterceptorList?: RequestInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
-  responseInterceptorList?: ResponseInterceptorListType<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>
-  debugPrint?: boolean
-  timeoutMillis?: number
-}
+export type GetAxiosNewClientOptionsType<StateType = any> = GetNewClientOptionsType<
+  StateType,
+  AxiosNetClientConfig,
+  AxiosResponse,
+  AxiosError
+>
 
-export function getAxiosNewClient<StateType = any>(baseUrl: string, options?: GetAxiosNewClientOptionsType<StateType>) {
+export function getAxiosNewClient<StateType = any>(
+  baseUrl: string,
+  options?: GetAxiosNewClientOptionsType<StateType>,
+): ServiceClient<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError> {
   return new ServiceClient<StateType, AxiosNetClientConfig, AxiosResponse, AxiosError>(
     NetClientAxios,
     baseUrl,

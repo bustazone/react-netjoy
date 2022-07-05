@@ -1,8 +1,14 @@
-import React, { FunctionComponent } from 'react'
+import React, { FunctionComponent, useEffect } from 'react';
 import { Text, View, TouchableOpacity } from 'react-native'
 import { ExampCompPropsType } from './View.Types';
 
 const ExampComp: FunctionComponent<ExampCompPropsType> = value => {
+  useEffect(() => {
+    console.log('ExampComp <------')
+    return () => {
+      console.log('ExampComp destroy <------')
+    }
+  }, [])
   return (
     <View>
       <TouchableOpacity

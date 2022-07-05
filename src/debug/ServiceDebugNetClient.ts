@@ -1,9 +1,9 @@
 import * as NJTypes from '../base/CommonTypes'
+import { NetjoyError, NetjoyErrorCodes, NetjoyResponse } from '../base/CommonTypes'
 import { DebugError, DebugNetClientConfig, DebugResponse } from './ServiceDebugNetClient.Types'
 import { RequestInterceptorType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorType } from '../base/ResponseInterceptorUtils.Types'
-import { NetjoyError, NetjoyResponse } from '../base/CommonTypes'
-import { DEBUG_CANCELLED_REQUEST_ERROR_CODE, DEBUG_ERROR_CODE } from './Error.Constants'
+import { DEBUG_CANCELLED_REQUEST_ERROR_CODE } from './Error.Constants'
 
 export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse, DebugError> {
   debugPrint: boolean
@@ -133,10 +133,10 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse,
             // Execute response interceptors on success
             this.executeResponseInterceptorList(response, undefined, true)
               .then(responsex => {
-                onSuccess({ _original: responsex, status: 200, config: responsex.config as DebugNetClientConfig, data: responsex.data })
+                onSuccess({ original: responsex, status: 200, domain_data: responsex.data })
               })
               .catch(error => {
-                onFailure({ _original: error, code: DEBUG_ERROR_CODE, error: error })
+                onFailure({ original: error, code: NetjoyErrorCodes.NETJOY_FAILURE_RESPONSE_ERROR_CODE })
               })
               .then(() => {
                 onFinish()
@@ -146,10 +146,10 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse,
             // Execute response interceptors on error
             this.executeResponseInterceptorList(undefined, error, true)
               .then(response => {
-                onSuccess({ _original: response, status: 200, config: response.config as DebugNetClientConfig, data: response.data })
+                onSuccess({ original: response, status: 200 })
               })
               .catch(errorx => {
-                onFailure({ _original: errorx, code: DEBUG_ERROR_CODE, error: errorx })
+                onFailure({ original: errorx, code: NetjoyErrorCodes.NETJOY_FAILURE_RESPONSE_ERROR_CODE })
               })
               .then(() => {
                 onFinish()
@@ -159,10 +159,10 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse,
       .catch(error => {
         this.executeResponseInterceptorList(undefined, error, true)
           .then(response => {
-            onSuccess({ _original: response, status: 200, config: response.config as DebugNetClientConfig, data: response.data })
+            onSuccess({ original: response, status: 200 })
           })
           .catch(errorx => {
-            onFailure({ _original: errorx, code: DEBUG_ERROR_CODE, error: errorx })
+            onFailure({ original: errorx, code: NetjoyErrorCodes.NETJOY_FAILURE_RESPONSE_ERROR_CODE })
             onFailure(errorx)
           })
           .then(() => {
@@ -177,11 +177,11 @@ export class NetClientDebug implements NJTypes.NetClientInterface<DebugResponse,
         true,
       )
         .then(response => {
-          onSuccess({ _original: response, status: 200, config: response.config as DebugNetClientConfig, data: response.data })
+          onSuccess({ original: response, status: 200 })
         })
         .catch(error => {
           if (error?.code === 'DEBUG_CANCELLED_REQUEST_ERROR_CODE') return
-          onFailure({ _original: error, code: DEBUG_ERROR_CODE, error: error })
+          onFailure({ original: error, code: NetjoyErrorCodes.NETJOY_CANCEL_ERROR_CODE })
         })
         .then(() => {
           onFinish()

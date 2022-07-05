@@ -1,4 +1,4 @@
-import { axios } from 'react-netjoy'
+import { axios, base } from 'react-netjoy'
 import { getAxiosRequest } from '../services'
 // import { debug } from 'react-netjoy'
 // import { getDebugRequest } from '../services'
@@ -64,36 +64,36 @@ function createResponseInterceptors() {
 }
 
 export const executeCall = () => {
-    const axiosReq = getAxiosRequest(
-      response => {
-        console.log('response')
-        console.log(response)
-      },
-      error => {
-        console.log('error')
-        console.log(error)
-      },
-    )
-    console.log('axiosReq')
-    console.log(axiosReq)
-    const options: axios.GetAxiosNewClientOptionsType<{}> = {
-      debugPrint: false,
-      requestInterceptorList: createRequestInterceptors,
-      responseInterceptorList: createResponseInterceptors,
-    }
-    axios.getAxiosNewClient('', options).executeRequest(axiosReq)
-    // debug
-    //   .getDebugNewClient('', () => {}, {}, undefined, undefined, undefined, true)
-    //   .executeRequest(
-    //     getDebugRequest(
-    //       response => {
-    //         console.log('response')
-    //         console.log(response)
-    //       },
-    //       error => {
-    //         console.log('error')
-    //         console.log(error)
-    //       },
-    //     ),
-    //   )
+  const axiosReq: base.ServiceClient = getAxiosRequest(
+    response => {
+      console.log('response')
+      console.log(response)
+    },
+    error => {
+      console.log('error')
+      console.log(error)
+    },
+  )
+  console.log('axiosReq')
+  console.log(axiosReq)
+  const options: axios.GetAxiosNewClientOptionsType<{}> = {
+    debugPrint: false,
+    requestInterceptorList: createRequestInterceptors,
+    responseInterceptorList: createResponseInterceptors,
+  }
+  axios.getAxiosNewClient('', options).executeRequest(axiosReq)
+  // debug
+  //   .getDebugNewClient('', () => {}, {}, undefined, undefined, undefined, true)
+  //   .executeRequest(
+  //     getDebugRequest(
+  //       response => {
+  //         console.log('response')
+  //         console.log(response)
+  //       },
+  //       error => {
+  //         console.log('error')
+  //         console.log(error)
+  //       },
+  //     ),
+  //   )
 }

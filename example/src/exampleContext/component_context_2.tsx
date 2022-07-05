@@ -1,6 +1,6 @@
-import React, { FunctionComponent, PropsWithChildren, useState } from 'react';
+import React, { FunctionComponent, PropsWithChildren, useState } from 'react'
 import { Alert } from 'react-native'
-import { Context2DataType } from './component_context_2.types';
+import { Context2DataType } from './component_context_2.types'
 
 const initial: Context2DataType = {
   data2: 'data',
@@ -18,11 +18,7 @@ const ExampHandler: FunctionComponent<PropsWithChildren<{}>> = props => {
   function setInfop(i: string) {
     setInfo(i)
   }
-  return (
-    <Context2.Provider value={{ ...initial, info2: info, setInfop2: setInfop }}>
-      {props.children}
-    </Context2.Provider>
-  )
+  return <Context2.Provider value={{ ...initial, info2: info, setInfop2: setInfop }}>{props.children}</Context2.Provider>
 }
 
 export default ExampHandler

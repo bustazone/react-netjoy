@@ -7,6 +7,8 @@ import { RequestInterface } from '../base/Request.Types'
 class RequestBudgetComponent<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> extends Component<
   RequestBudgetComponentProps<StateType, ConfigType, ResponseType, ErrorType>
 > {
+  // State (with auth or whatever)
+  // list of netclients ????
   netClient: ServiceClientInterface<StateType, ConfigType, ResponseType, ErrorType>
   requestList: RequestType<StateType>[] = []
 

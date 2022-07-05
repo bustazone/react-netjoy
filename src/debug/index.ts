@@ -1,4 +1,4 @@
-import ServiceClient from '../base/ServiceClient'
+import { ServiceClient } from '../base'
 import { getServiceClientMiddleware } from '../redux/NetworkMiddleware'
 import { DebugResponse, DebugError } from './ServiceDebugNetClient.Types'
 import { NetClientDebug } from './ServiceDebugNetClient'

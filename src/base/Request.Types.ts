@@ -15,8 +15,8 @@ export interface RequestInterface<StateType, DomainResponseType, DomainErrorType
   setBodyFromState?: (state?: StateType) => string
   getHeadersFromState: (state?: StateType) => { [key: string]: string }
   onStart: () => void
-  onSuccess: (response: NetjoyResponse<any, DomainResponseType>) => void
-  onFailure: (error: NetjoyError<any, DomainErrorType>) => void
+  onSuccess: (response: DomainResponseType) => void
+  onFailure: (error: DomainErrorType) => void
   onFinish: () => void
   transformResponseDataWithState?: (response: NetjoyResponse, state?: StateType) => DomainResponseType
   transformErrorDataWithState?: (error: NetjoyError, state?: StateType) => DomainErrorType

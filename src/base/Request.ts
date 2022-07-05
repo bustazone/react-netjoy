@@ -9,8 +9,8 @@ export class Request<StateType, DomainResponseType, DomainErrorType>
   setBodyFromState?: (state?: StateType) => any
   getHeadersFromState: (state?: StateType) => { [key: string]: string }
   onStart: () => void
-  onSuccess: (response: NetjoyResponse<any, DomainResponseType>) => void
-  onFailure: (error: NetjoyError<any, DomainErrorType>) => void
+  onSuccess: (response: DomainResponseType | any) => void
+  onFailure: (error: DomainErrorType | any) => void
   onFinish: () => void
   transformResponseDataWithState?: (response: NetjoyResponse, state?: StateType) => DomainResponseType
   transformErrorDataWithState?: (error: NetjoyError, state?: StateType) => DomainErrorType

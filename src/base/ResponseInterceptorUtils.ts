@@ -44,7 +44,20 @@ function createResponseInterceptor<StateType, ConfigType extends NetClientConfig
   })
 }
 
-export class ResponseInterceptorList<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
+export interface ResponseInterceptorListInterface<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
+  addInterceptor: (
+    onSuccess?: InterceptorResponseSuccessInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
+    onFailure?: InterceptorResponseErrorInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
+  ) => ResponseInterceptorList<StateType, ConfigType, ResponseType, ErrorType>
+  getList: () => ResponseInterceptorListType<StateType, ConfigType, ResponseType, ErrorType>
+}
+
+export interface ResponseInterceptorListConstructableInterface<ConfigType extends NetClientConfigWithID, ResponseType, ErrorType> {
+  new <StateType>(): ResponseInterceptorListInterface<StateType, ConfigType, ResponseType, ErrorType>
+}
+
+export class ResponseInterceptorList<StateType, ConfigType extends NetClientConfigWithID, ResponseType, ErrorType>
+  implements ResponseInterceptorListInterface<StateType, ConfigType, ResponseType, ErrorType> {
   private list: ResponseInterceptorFunctionType<StateType, ConfigType, ResponseType, ErrorType>[] = []
 
   private createResponseInterceptorList(
@@ -60,8 +73,9 @@ export class ResponseInterceptorList<StateType, ConfigType extends NetClientConf
   addInterceptor(
     onSuccess?: InterceptorResponseSuccessInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
     onFailure?: InterceptorResponseErrorInputFunction<StateType, ConfigType, ResponseType, ErrorType>,
-  ) {
+  ): ResponseInterceptorList<StateType, ConfigType, ResponseType, ErrorType> {
     this.list.push(createResponseInterceptor(onSuccess, onFailure))
+    return this
   }
 
   getList() {

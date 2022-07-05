@@ -7,12 +7,12 @@ export const dispatchToProps = (dispatch: React.Dispatch<any>): LocalReducerEven
   setCounter: value =>
     dispatch({
       type: SET_COUNTER,
-      value
-    })
+      value,
+    }),
 })
 
 export const initState: LocalReducerState = {
-  counter: false
+  counter: false,
 }
 
 export const component_reducer = (state: LocalReducerState = initState, action: any) => {

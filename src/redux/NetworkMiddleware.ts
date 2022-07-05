@@ -1,4 +1,4 @@
-import ServiceClient from '../base/ServiceClient'
+import { ServiceClient } from '../base'
 import type { Action, AnyAction, Dispatch, Middleware, MiddlewareAPI } from 'redux'
 import type { NetClientConstructor, NetClientConfigWithID } from '../base/CommonTypes'
 import { adaptRequestFromReduxAction } from './Redux.Utils'

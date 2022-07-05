@@ -3,7 +3,6 @@ import { ReduxRequest, RequestActionFromObject } from './ReduxRequestAction'
 import { ReduxActionInterface } from './ReduxRequestAction.Types'
 import { RequestInterface } from '../base/Request.Types'
 import { Dispatch } from 'redux'
-import { NetjoyError, NetjoyResponse } from '../base/CommonTypes'
 import { Request } from '../base/Request'
 
 export function adaptRequestFromReduxAction<StateType, DomainResponseType, DomainErrorType>(
@@ -18,9 +17,7 @@ export function adaptRequestFromReduxAction<StateType, DomainResponseType, Domai
       next(actionStart)
     }
   }
-  const newOnSuccess = (type: string | undefined, method: (response: NetjoyResponse<any, DomainResponseType>) => void) => (
-    response: NetjoyResponse<any, DomainResponseType>,
-  ) => {
+  const newOnSuccess = (type: string | undefined, method: (response: DomainResponseType) => void) => (response: DomainResponseType) => {
     if (type) {
       const out: OutActionSuccess<DomainResponseType> = {
         type: type,
@@ -31,9 +28,7 @@ export function adaptRequestFromReduxAction<StateType, DomainResponseType, Domai
     method(response)
   }
   call.onSuccess = newOnSuccess(call.successReqType, call.onSuccess)
-  const newOnFailure = (type: string | undefined, method: (error: NetjoyError<any, DomainErrorType>) => void) => (
-    error: NetjoyError<any, DomainErrorType>,
-  ) => {
+  const newOnFailure = (type: string | undefined, method: (error: DomainErrorType) => void) => (error: DomainErrorType) => {
     if (type) {
       const out: OutActionFailure<DomainErrorType> = {
         type: type,

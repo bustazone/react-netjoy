@@ -1,11 +1,11 @@
 {
   "name": "react-netjoy",
-  "version": "0.1.16",
+  "version": "0.2.14",
   "description": "Network client easy and powerful",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "react-native": "src/index",
-  "types": "lib/typescript/index.d.ts",
+  "types": "lib/typescript/src/index.d.ts",
   "source": "src/index",
   "files": [
     "lib/",
@@ -20,7 +20,8 @@
     "lint-fix": "npx eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "prettier": "npx prettier --check \"{src,__tests__}/**/*.{js,jsx,ts,tsx}\"",
     "prettier-fix": "npx prettier --write \"{src,__tests__}/**/*.{js,jsx,ts,tsx}\"",
-    "tsc": "npx tsc -p . --noEmit"
+    "tsc": "npx tsc -p . --noEmit",
+    "start-netjoy-service-client-test-server": "cd test_server && npm i && tsc && node dist/app.js"
   },
   "keywords": [
     "react",
@@ -34,41 +35,44 @@
   },
   "homepage": "https://github.com/bustazone/react-netjoy#readme",
   "devDependencies": {
-    "react": "17.0.1",
     "@babel/core": "7.12.10",
     "@babel/runtime": "7.12.5",
-    "react-native-builder-bob": "^0.17.1",
     "@react-native-community/eslint-config": "^2.0.0",
     "@types/jest": "^26.0.19",
+    "@types/lodash.clonedeep": "^4.5.6",
     "@types/react": "^16.9.19",
     "@types/react-redux": "^7.1.7",
     "@typescript-eslint/eslint-plugin": "^4.12.0",
     "@typescript-eslint/parser": "^4.12.0",
+    "axios": "^0.21.1",
     "babel-jest": "25.5.1",
     "babel-plugin-module-resolver": "^4.1.0",
     "eslint": "^7.2.0",
     "eslint-config-prettier": "^7.2.0",
-    "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-json": "^2.1.2",
+    "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-react": "^7.22.0",
     "husky": "^4.3.6",
     "jest": "25.5.4",
     "metro-react-native-babel-preset": "0.59.0",
     "prettier": "^2.2.1",
     "prettier-eslint": "^12.0.0",
+    "react": "17.0.1",
+    "react-native-builder-bob": "^0.18.1",
     "react-test-renderer": "16.13.1",
-    "typescript": "^4.1.3",
-    "axios": "^0.21.1",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "typescript": "^4.1.3"
   },
   "peerDependencies": {
-    "react": "*",
     "axios": ">= 0.21.x",
+    "react": "*",
     "redux": ">= 4.x.x"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lodash.clonedeep": "^4.5.0"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint && npm run tsc"

@@ -1,9 +1,9 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse, Method } from 'axios'
 import * as NJTypes from '../base/CommonTypes'
+import { NetjoyError, NetjoyErrorCodes, NetjoyResponse } from '../base'
 import { AxiosNetClientConfig } from './ServiceAxiosNetClient.Types'
 import { RequestInterceptorType } from '../base/RequestInterceptorUtils.Types'
 import { ResponseInterceptorType } from '../base/ResponseInterceptorUtils.Types'
-import { NetjoyError, NetjoyResponse } from '../base/CommonTypes'
 
 export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse, AxiosError> {
   debugPrint: boolean
@@ -58,7 +58,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
           return newConfig
         },
         async error => {
-          const ff = error.config as AxiosNetClientConfig
+          const ff = error?.config as AxiosNetClientConfig
           let newConfig = ff
           if (chain.error) {
             if (this.debugPrint) {
@@ -89,6 +89,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
     this.instance.interceptors.request.use(
       config => {
         const ff = config as AxiosNetClientConfig
+        // If debugForced exist avoid to make the call
         if (ff.debugForcedError || ff.debugForcedResponse) {
           throw { config: config }
         }
@@ -99,34 +100,35 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
       },
     )
 
+    // First response interceptor have to transform response input to NetjoyResponseType???
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
         return response
       },
       async (error: AxiosError) => {
-        const ff = error.config as AxiosNetClientConfig
-        if (axios.isCancel(error)) {
-          if (this.debugPrint) {
-            console.log(`[NetJoyBaseAxios] Request ${ff?.reqId || 'unknown'} cancelled`, error.message)
-          }
-          return error
-        }
+        const ff = error?.config as AxiosNetClientConfig
         if (ff?.debugForcedError) {
           const eOut = ff.debugForcedError
           eOut.config = error.config
           throw eOut
         }
         if (ff?.debugForcedResponse) {
-          return { ...error, ...ff.debugForcedResponse }
+          return { ...error.response, data: ff.debugForcedResponse }
         }
-        throw error
+        const interceptorTypedError = this.transformClientErrorToNetjoyError(error)
+        if (interceptorTypedError.code === NetjoyErrorCodes.NETJOY_CANCEL_ERROR_CODE) {
+          if (this.debugPrint) {
+            console.log(`[NetJoyBaseAxios] Request ${ff?.reqId || 'unknown'} cancelled`, error.message)
+          }
+        }
+        throw interceptorTypedError.original
       },
     )
 
     responseInterceptorList.forEach((chain: ResponseInterceptorType<AxiosResponse, AxiosError>, index: number) => {
       this.instance.interceptors.response.use(
         async (response: AxiosResponse) => {
-          const ff = response.config as AxiosNetClientConfig
+          const ff = response?.config as AxiosNetClientConfig
           let newResponse: AxiosResponse = response
           if (chain.success) {
             if (this.debugPrint) {
@@ -138,7 +140,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Rejected ${ff?.reqId || 'unknown'} response success interceptor #${index}`)
               }
-              if (!error.response) error.response = newResponse
+              if (!error?.response) error.response = newResponse
               throw error
             }
             if (this.debugPrint) {
@@ -152,7 +154,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
           return newResponse
         },
         async error => {
-          const ff = error.config as AxiosNetClientConfig
+          const ff = error?.config as AxiosNetClientConfig
           let newResponse
           if (chain.error) {
             if (this.debugPrint) {
@@ -164,7 +166,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
               if (this.debugPrint) {
                 console.log(`[NetJoyBaseAxios] Rejected ${ff?.reqId || 'unknown'} response failure interceptor #${index}`)
               }
-              if (!newCatchError.response) newCatchError.response = newResponse
+              if (!newCatchError?.response) newCatchError.response = newResponse
               throw newCatchError
             }
             if (this.debugPrint) {
@@ -179,6 +181,34 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
         },
       )
     })
+  }
+
+  transformClientResponseToNetjoyResponse(response: AxiosResponse): NetjoyResponse<AxiosResponse> {
+    return {
+      status: response?.status,
+      original: response,
+    }
+  }
+
+  transformClientErrorToNetjoyError(error: AxiosError): NetjoyError<AxiosError> {
+    let code: NetjoyErrorCodes = NetjoyErrorCodes.NETJOY_UNHANDLED_ERROR_CODE
+    let status: number | undefined
+    if (axios.isCancel(error)) {
+      code = NetjoyErrorCodes.NETJOY_CANCEL_ERROR_CODE
+    }
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        code = NetjoyErrorCodes.NETJOY_FAILURE_RESPONSE_ERROR_CODE
+        status = error.response.status
+      } else if (error.code === 'ECONNABORTED') {
+        code = NetjoyErrorCodes.NETJOY_TIMEOUT_ERROR_CODE
+      }
+    }
+    return {
+      code,
+      status,
+      original: error,
+    }
   }
 
   // For intermediate calls
@@ -196,6 +226,7 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
     onSuccess: (response: NetjoyResponse<AxiosResponse>) => void,
     onFailure: (error: NetjoyError<AxiosError>) => void,
     onFinish: () => void,
+    onCancel: () => void,
     debugForcedResponse?: any,
     debugForcedError?: any,
   ): () => void {
@@ -217,22 +248,25 @@ export class NetClientAxios implements NJTypes.NetClientInterface<AxiosResponse,
 
     onStart()
     this.instance(config)
-      .then(response => {
+      .then((response: AxiosResponse) => {
         if (this.debugPrint) {
           console.log(`[NetJoyBaseAxios] Successfully call ${config.reqId}:\n${JSON.stringify(response)}`)
         }
-        onSuccess({ _original: response, status: response.status, config: response.config as AxiosNetClientConfig, data: response.data })
+        const interceptorTypedResponse = this.transformClientResponseToNetjoyResponse(response)
+        onSuccess(interceptorTypedResponse)
+        onFinish()
       })
-      .catch(error => {
-        if (axios.isCancel(error)) {
+      .catch((error: AxiosError) => {
+        const interceptorTypedError = this.transformClientErrorToNetjoyError(error)
+        // If the call is cancelled return no error
+        if (interceptorTypedError.code === NetjoyErrorCodes.NETJOY_CANCEL_ERROR_CODE) {
+          onCancel()
           return
         }
         if (this.debugPrint) {
           console.log(`[NetJoyBaseAxios] Failing call ${config.reqId}:\n${JSON.stringify(error)}`)
         }
-        onFailure({ _original: error, code: error.code, error })
-      })
-      .then(() => {
+        onFailure(interceptorTypedError)
         onFinish()
       })
     // return function to cancel request

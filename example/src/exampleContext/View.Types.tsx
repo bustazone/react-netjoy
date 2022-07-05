@@ -1,9 +1,6 @@
-export type ExampCompInputPropsType = {
+export type ExampCompPropsType = {
   data: string | undefined
   info: string
-}
-export type ExampCompEventPropsType = {
   func: () => void
   setInfop: (i: string) => void
 }
-export type ExampCompPropsType = ExampCompInputPropsType & ExampCompEventPropsType

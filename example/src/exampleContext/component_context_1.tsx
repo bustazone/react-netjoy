@@ -1,6 +1,6 @@
-import React, { FunctionComponent, PropsWithChildren, useState } from 'react';
+import React, { FunctionComponent, PropsWithChildren, useState } from 'react'
 import { Alert } from 'react-native'
-import { ContextDataType } from './component_context_1.types';
+import { ContextDataType } from './component_context_1.types'
 
 const initial: ContextDataType = {
   data: 'data',
